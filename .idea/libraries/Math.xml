@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="Math">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../_libs/ZKLToolsJava/out/artifacts/Math_jar/Math.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/Math.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
