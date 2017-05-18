@@ -1,14 +1,11 @@
 package zkl.AIGames.germs.logic
 
 import zkl.AIGames.germs.Conf
-import zkl.tools.math.MT
 
 class Dish(val width: Double = Conf.dishSize, val height: Double = Conf.dishSize) {
 	
 	val germs: List<Germ> get() = _germs
 	val nutrients: List<Nutrient> get() = _nutrients
-	
-	
 	private val _germs = ArrayList<Germ>()
 	private val _nutrients = ArrayList<Nutrient>()
 	
@@ -25,9 +22,7 @@ class Dish(val width: Double = Conf.dishSize, val height: Double = Conf.dishSize
 		while (germIterator.hasNext()) {
 			val germ=germIterator.next()
 			
-			germ.process(time)
-			germ.position.x = MT.valueLimit(germ.position.x, 0.0, this.width)
-			germ.position.y = MT.valueLimit(germ.position.y, 0.0, this.height)
+			germ.process(this, time)
 			
 			val nutrientIterator=_nutrients.iterator()
 			while (nutrientIterator.hasNext()) {
@@ -43,11 +38,7 @@ class Dish(val width: Double = Conf.dishSize, val height: Double = Conf.dishSize
 			}
 		}
 		
-		nutrients.forEach { nutrient->
-			nutrient.process(time)
-			nutrient.position.x = MT.valueLimit(nutrient.position.x, 0.0, this.width)
-			nutrient.position.y = MT.valueLimit(nutrient.position.y, 0.0, this.height)
-		}
+		nutrients.forEach { nutrient-> nutrient.process(this, time) }
 		if (Math.random() < time/Conf.nutrientInterval) {
 			putNutrient()
 		}

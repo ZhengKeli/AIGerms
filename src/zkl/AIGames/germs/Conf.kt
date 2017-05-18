@@ -18,9 +18,11 @@ object Conf {
 	val maxGermVelocity = 10.0
 	val staticEnergyCost = 0.001
 	val movingEnergyCost = 0.001
+	val germFieldConstant = 1.0
 	
 	//nutrient
-	val nutrientInterval = 5.0
+	val nutrientInterval = 3.0
+	val nutrientFieldConstant = 1.0
 	
 	
 }
