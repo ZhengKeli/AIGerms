@@ -26,5 +26,6 @@
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="library" name="Python 3.5.2 (C:\Program Files\Python35\python.exe) interpreter library" level="application" />
     <orderEntry type="library" name="Math" level="project" />
+    <orderEntry type="library" name="org.tensorflow:tensorflow:1.2.0-rc1" level="project" />
   </component>
 </module>
