@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 # feeling network
-feel_nutrient = tf.placeholder(tf.float32, name="feel_nutrient")  # [-1,2]
-feel_germ = tf.placeholder(tf.float32, name="feel_germ")  # [-1,2]
+feel_nutrient = tf.placeholder(tf.float32, name="feel_nutrient")  # shape = [-1,2]
+feel_germ = tf.placeholder(tf.float32, name="feel_germ")  # shape = [-1,2]
 
 # actor network
 input_actor1 = tf.reshape([feel_nutrient, feel_germ], [-1, 4], "input_actor1")
@@ -35,8 +35,8 @@ output_critic3 = tf.nn.tanh(tf.matmul(input_critic3, weights_critic3) + bias_cri
 
 # train
 ass_loss = tf.reduce_sum(output_critic3, name="ass_loss")
-real_loss = tf.placeholder(tf.float32, 0, "real_loss")
-loss_loss = tf.square(ass_loss - real_loss,"loss_loss")
+real_loss = tf.placeholder(tf.float32, name="real_loss")  # shape = 0
+loss_loss = tf.square(ass_loss - real_loss, "loss_loss")
 
 vars_actor = (weights_actor1, bias_actor1, weights_actor2, bias_actor2)
 train_actor = tf.train.AdamOptimizer().minimize(ass_loss, var_list=vars_actor, name="train_actor")

@@ -15,10 +15,9 @@ class Command(Enum):
     FINALIZE = 1
 
     RUN_ACTOR = 2
-    RUN_ACTOR_DISTURB = 3
+    TRAIN_CRITIC = 3
+    TRAIN_ACTOR = 4
 
-    TRAIN_CRITIC = 4
-    TRAIN_CRITIC_INHERIT = 5
 
 
 @unique
@@ -41,18 +40,28 @@ def read_vector():
     return vector
 
 
-def read_float_list(size):
+def read_float_list_raw(size):
     re = [] * size
     for i in range(size):
         re.append(read_float())
     return re
 
 
-def read_vector_list(size):
+def read_float_list():
+    size = read_int()
+    return read_float_list_raw(size)
+
+
+def read_vector_list_raw(size):
     re = [] * size
     for i in range(size):
         re.append(read_vector())
     return re
+
+
+def read_vector_list():
+    size = read_int()
+    return read_vector_list_raw(size)
 
 
 # write
@@ -68,14 +77,24 @@ def write_vector(value):
     rawStdout.write(struct.pack("!2f", *value))
 
 
-def write_float_list(value_list):
+def write_float_list_raw(value_list):
     for value in value_list:
         write_float(value)
 
 
-def write_vector_list(value_list):
+def write_float_list(value_list):
+    write_int(len(value_list))
+    write_float_list_raw(value_list)
+
+
+def write_vector_list_raw(value_list):
     for value in value_list:
         write_vector(value)
+
+
+def write_vector_list(value_list):
+    write_int(len(value_list))
+    write_vector_list_raw(value_list)
 
 
 def flush_stdout():

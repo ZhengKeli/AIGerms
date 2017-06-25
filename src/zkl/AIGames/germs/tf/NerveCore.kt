@@ -1,15 +1,8 @@
 package zkl.AIGames.germs.tf
 
+import zkl.AIGames.germs.logic.NerveCore
 import zkl.tools.math.Point2D
 
-
-interface NerveCore {
-	fun initialize()
-	fun finalize()
-	
-	fun runActor(list: List<Point2D>)
-	
-}
 
 class TFNerveCore : NerveCore {
 	override fun initialize() {
