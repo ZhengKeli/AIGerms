@@ -1,34 +1,26 @@
 import struct
 import sys
 
-from enum import Enum, unique
-
 # io
 rawStdin = sys.stdin.buffer.raw
 rawStdout = sys.stdout.buffer
 
 
 # define
-@unique
-class Command(Enum):
-    INITIALIZE = 0
-    FINALIZE = 1
+COM_INITIALIZE = 0
+COM_FINALIZE = 1
+COM_RUN_ACTOR = 2
+COM_TRAIN_CRITIC = 3
+COM_TRAIN_ACTOR = 4
 
-    RUN_ACTOR = 2
-    TRAIN_CRITIC = 3
-    TRAIN_ACTOR = 4
-
-
-
-@unique
-class Status(Enum):
-    SUCCEED = 0
-    FAILED = 1
+STU_SUCCEED = 0
+STU_FAILED = 1
 
 
 # read
 def read_int():
-    return struct.unpack('!i', rawStdin.read(4))[0]
+    read_bytes = rawStdin.read(4)
+    return struct.unpack('!i', read_bytes)[0]
 
 
 def read_float():
@@ -99,3 +91,4 @@ def write_vector_list(value_list):
 
 def flush_stdout():
     rawStdout.flush()
+

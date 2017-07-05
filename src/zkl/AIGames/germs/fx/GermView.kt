@@ -11,7 +11,7 @@ class GermView(centerX: Double=0.0, centerY: Double=0.0, radius: Double = Conf.g
 		centerX = germ.position.x
 		centerY = germ.position.y
 		
-		val colorRate = germ.energy * 0.9 + 0.1
+		val colorRate = (germ.energy/Conf.maxEnergy) * 0.9 + 0.1
 		fill = Color(1.0, 1.0, 1.0, colorRate)
 	}
 	

@@ -11,7 +11,6 @@ import javafx.scene.paint.Color
 import javafx.stage.Stage
 import zkl.AIGames.germs.Conf
 import zkl.AIGames.germs.logic.Dish
-import zkl.AIGames.germs.logic.Nutrient
 import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
@@ -47,7 +46,7 @@ class GermsApplication : Application() {
 		return rootNote
 	}
 	private fun initContent(){
-		dish.initialCreation()
+		dish.initialize()
 	}
 	
 	
