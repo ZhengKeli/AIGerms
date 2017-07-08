@@ -3,10 +3,12 @@ import tensorflow as tf
 # feeling network
 feel_nutrient = tf.placeholder(tf.float32, name="feel_nutrient")  # [-1,2]
 feel_germ = tf.placeholder(tf.float32, name="feel_germ")  # [-1,2]
+feel_energy = tf.placeholder(tf.float32, name="feel_energy")  # [-1]
+feel_energy = tf.stack([feel_energy], 1)  # [-1,1]
 
 # actor network
-input_actor1 = tf.concat([feel_nutrient, feel_germ], 1, "input_actor1")  # [-1,4]
-weights_actor1 = tf.Variable(tf.random_uniform([4, 10], -1.0, 1.0), name="weights_actor1")
+input_actor1 = tf.concat([feel_nutrient, feel_germ, feel_energy], 1, "input_actor1")  # [-1,5]
+weights_actor1 = tf.Variable(tf.random_uniform([5, 10], -1.0, 1.0), name="weights_actor1")
 bias_actor1 = tf.Variable(tf.random_uniform([10], -1.0, 1.0), name="bias_actor1")
 output_actor1 = tf.nn.tanh(tf.matmul(input_actor1, weights_actor1) + bias_actor1, "output_actor1")  # [-1,10]
 
@@ -18,8 +20,8 @@ output_actor2 = tf.nn.tanh(tf.matmul(input_actor2, weights_actor2) + bias_actor2
 act_velocity = tf.multiply(output_actor2, 1.0, "act_velocity")  # [-1,2]
 
 # critic network
-input_critic1 = tf.concat([feel_nutrient, feel_germ, act_velocity], 1, "input_critic1")  # [-1,6]
-weights_critic1 = tf.Variable(tf.random_uniform([6, 20], -1.0, 1.0), name="weights_critic1")
+input_critic1 = tf.concat([feel_nutrient, feel_germ, feel_energy, act_velocity], 1, "input_critic1")  # [-1,7]
+weights_critic1 = tf.Variable(tf.random_uniform([7, 20], -1.0, 1.0), name="weights_critic1")
 bias_critic1 = tf.Variable(tf.random_uniform([20], -1.0, 1.0), name="bias_critic1")
 output_critic1 = tf.nn.tanh(tf.matmul(input_critic1, weights_critic1) + bias_critic1, "output_critic1")  # [-1,20]
 

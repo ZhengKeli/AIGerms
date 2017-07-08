@@ -16,6 +16,7 @@ def initialize(path="./graph/aiGerms.meta", checkpoint="./graph"):
 
     graph.feel_nutrient = graph.get_tensor_by_name("feel_nutrient:0")
     graph.feel_germ = graph.get_tensor_by_name("feel_germ:0")
+    graph.feel_energy = graph.get_tensor_by_name("feel_energy:0")
 
     graph.act_velocity = graph.get_tensor_by_name("act_velocity:0")
 
@@ -45,25 +46,37 @@ def finalize(save_graph=True):
 
 
 def test():
-    val_act_velocity = sess.run(graph.act_velocity, {graph.feel_nutrient: [0.0, 0.0], graph.feel_germ: [0.0, -3.0]})
+    val_act_velocity = sess.run(
+        fetches=graph.act_velocity,
+        feed_dict={
+            graph.feel_nutrient: [[0.0, 0.0]],
+            graph.feel_germ: [[0.0, -3.0]],
+            graph.feel_energy: [[0.5]]
+        }
+    )
     print(val_act_velocity)
 
 
-def run_actor(val_feel_nutrient, val_feel_germ):
+def run_actor(val_feel_nutrient, val_feel_germ, val_feel_energy):
     return sess.run(
         fetches=graph.act_velocity,
         feed_dict={
             graph.feel_nutrient: val_feel_nutrient,
-            graph.feel_germ: val_feel_germ
+            graph.feel_germ: val_feel_germ,
+            graph.feel_energy: val_feel_energy
         }
     )
 
 
-def train_critic(val_feel_nutrient, val_feel_germ, val_act_velocity, val_real_loss,val_learning_rate=None):
-    feed_dict={
-        graph.act_velocity: val_act_velocity,
+def train_critic(
+        val_feel_nutrient, val_feel_germ, val_feel_energy,
+        val_act_velocity, val_real_loss,
+        val_learning_rate=None):
+    feed_dict = {
         graph.feel_nutrient: val_feel_nutrient,
         graph.feel_germ: val_feel_germ,
+        graph.feel_energy: val_feel_energy,
+        graph.act_velocity: val_act_velocity,
         graph.real_loss: val_real_loss
     }
     if val_learning_rate is not None:
@@ -74,10 +87,11 @@ def train_critic(val_feel_nutrient, val_feel_germ, val_act_velocity, val_real_lo
     )
 
 
-def train_actor(val_feel_nutrient, val_feel_germ,val_learning_rate=None):
-    feed_dict={
+def train_actor(val_feel_nutrient, val_feel_germ, val_feel_energy, val_learning_rate=None):
+    feed_dict = {
         graph.feel_nutrient: val_feel_nutrient,
         graph.feel_germ: val_feel_germ,
+        graph.feel_energy: val_feel_energy,
         graph.real_loss: None
     }
     if val_learning_rate is not None:
