@@ -1,31 +1,43 @@
 package zkl.AIGames.germs
 
+import zkl.AIGames.germs.logic.Germ
+
 
 object Conf {
 	
 	//process
-	val processCount = 25
-	val processTime = 0.1
-	val frameInterval= 50L
+	val processCount = 5
+	val processUnit = 0.1
+	val frameInterval= 20L
 	
 	
 	//dish
 	val dishSize = 500.0
 	
 	//germ
-	val germCount =10
+	val germCount = 10
 	val germRadius = 20.0
-	val maxGermVelocity = 10.0
-	val maxEnergy = 1.0
-	val staticEnergyCost = 0.001
-	val movingEnergyCost = 0.001
-	val germFieldConstant = 0.1
+	val germMaxVelocity = 10.0
+	val germStaticEnergyCost = 0.001
+	val germMovingEnergyCost = 0.001
+	val germFieldConstant = 0.5e4
+	val germStarveToDeath = true
 	
 	//nutrient
 	val nutrientInterval = 5.0
 	val nutrientAmount = 0.5
-	val maxNutrientVelocity = 3.0
-	val nutrientFieldConstant = 1.0
+	val nutrientMaxVelocity = 3.0
+	val nutrientFieldConstant = 1e4
+	val nutrientDisturbAcceleration = 0.0
 	
+	
+	//training
+	val actInterval = 5.0
+	val hopeTime = 10.0
+	val maxLogCount = hopeTime / processUnit
+	val realLoss: (Germ)->Double = { germ ->
+		1.0/(germ.energy+0.1)
+	}
+	val germMaxDisturbVelocity = 0.3
 	
 }

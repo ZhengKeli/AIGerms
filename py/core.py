@@ -100,3 +100,4 @@ def train_actor(val_feel_nutrient, val_feel_germ, val_feel_energy, val_learning_
         fetches=[graph.train_actor, graph.ass_loss],
         feed_dict=feed_dict
     )
+

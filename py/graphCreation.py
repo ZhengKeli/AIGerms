@@ -23,17 +23,17 @@ act_velocity = tf.multiply(output_actor2, 1.0, "act_velocity")  # [-1,2]
 input_critic1 = tf.concat([feel_nutrient, feel_germ, feel_energy, act_velocity], 1, "input_critic1")  # [-1,7]
 weights_critic1 = tf.Variable(tf.random_uniform([7, 20], -1.0, 1.0), name="weights_critic1")
 bias_critic1 = tf.Variable(tf.random_uniform([20], -1.0, 1.0), name="bias_critic1")
-output_critic1 = tf.nn.tanh(tf.matmul(input_critic1, weights_critic1) + bias_critic1, "output_critic1")  # [-1,20]
+output_critic1 = tf.nn.relu(tf.matmul(input_critic1, weights_critic1) + bias_critic1, "output_critic1")  # [-1,20]
 
 input_critic2 = output_critic1
 weights_critic2 = tf.Variable(tf.random_uniform([20, 20], -1.0, 1.0), name="weights_critic2")
 bias_critic2 = tf.Variable(tf.random_uniform([20], -1.0, 1.0), name="bias_critic2")
-output_critic2 = tf.nn.tanh(tf.matmul(input_critic2, weights_critic2) + bias_critic2, "output_critic2")  # [-1,20]
+output_critic2 = tf.nn.relu(tf.matmul(input_critic2, weights_critic2) + bias_critic2, "output_critic2")  # [-1,20]
 
 input_critic3 = output_critic2
 weights_critic3 = tf.Variable(tf.random_uniform([20, 1], -1.0, 1.0), name="weights_critic3")
 bias_critic3 = tf.Variable(tf.random_uniform([1], -1.0, 1.0), name="bias_critic3")
-output_critic3 = tf.nn.tanh(tf.matmul(input_critic3, weights_critic3) + bias_critic3, "output_critic3")  # [-1,1]
+output_critic3 = tf.nn.relu(tf.matmul(input_critic3, weights_critic3) + bias_critic3, "output_critic3")  # [-1,1]
 
 # train
 ass_loss = tf.multiply(tf.reduce_sum(output_critic3, -1), 10.0, name="ass_loss")  # [-1]

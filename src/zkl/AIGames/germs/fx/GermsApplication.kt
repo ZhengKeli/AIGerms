@@ -19,37 +19,48 @@ fun main(args: Array<String>) {
 
 class GermsApplication : Application() {
 	
+	//ui
 	lateinit var stage: Stage
 	lateinit var rootNote: Pane
+	lateinit var dishView:DishView
 	override fun start(stage: Stage) {
 		this.stage = stage
 		initStage()
 	}
-	
-	
-	//init
 	private fun initStage() {
-		stage.scene = Scene(initRootNote(), Conf.dishSize, Conf.dishSize)
+		stage.scene = Scene(initDishView(), Conf.dishSize, Conf.dishSize)
 		stage.title = "germs"
 		stage.isIconified = false
 		stage.setOnHidden { wantProcess=false }
 		stage.show()
 	}
-	private fun initRootNote(): Parent {
-		rootNote = Pane()
+	private fun initDishView(): Parent {
+		dishView = DishView()
+		
+		rootNote = Pane(dishView)
 		rootNote.setOnMouseClicked {
-			rootNote.onMouseClicked = null
-			initContent()
-			startProcess()
+			if(!wantProcess){
+				initLogic()
+				startProcess()
+			}else{
+				stopProcess()
+				dish.nerveCore.finalize()
+				println("graph saved")
+				stage.close()
+			}
 		}
 		rootNote.background= Background(BackgroundFill(Color.DARKGRAY,null,null))
+		
 		return rootNote
 	}
-	private fun initContent(){
-		dish.initialize()
+	
+	private fun updateFrame(){
+		dishView.update(dish)
 	}
 	
 	
+	
+	//process
 	var wantProcess:Boolean=false
 	var processThread:Thread?=null
 	private fun startProcess(){
@@ -71,57 +82,36 @@ class GermsApplication : Application() {
 		processThread?.join()
 	}
 	private fun onProcess() {
-		for (i in 0 until Conf.processCount) {
-			dish.process()
-		}
-		Platform.runLater {
-			updateFrame()
-		}
-	}
-	
-	
-	//draw
-	val germViewBuffers = ArrayList<GermView>()
-	val nutrientViewBuffers = ArrayList<NutrientView>()
-	private fun updateFrame(){
-		if (germViewBuffers.size < dish.germs.size) {
-			for (i in germViewBuffers.size .. dish.germs.size){
-				val germView = GermView()
-				germView.isVisible=false
-				rootNote.children.add(germView)
-				germViewBuffers.add(germView)
+		try {
+			processLogic()
+			Platform.runLater {
+				updateFrame()
 			}
-		}
-		if (nutrientViewBuffers.size < dish.nutrients.size) {
-			for (i in nutrientViewBuffers.size .. dish.nutrients.size){
-				val nutrientView = NutrientView()
-				nutrientView.isVisible=false
-				rootNote.children.add(nutrientView)
-				nutrientViewBuffers.add(nutrientView)
+		} catch (e: Exception) {
+			Platform.runLater {
+				stopProcess()
 			}
 		}
 		
-		germViewBuffers.forEachIndexed{index,view->
-			if (index < dish.germs.size) {
-				view.update(dish.germs[index])
-				view.isVisible=true
-			}else{
-				view.isVisible=false
-			}
-		}
-		nutrientViewBuffers.forEachIndexed{index,view->
-			if (index < dish.nutrients.size) {
-				view.update(dish.nutrients[index])
-				view.isVisible=true
-			}else{
-				view.isVisible=false
-			}
-		}
 	}
+	
 	
 	
 	//logic
 	val dish = Dish()
+	val lastTimePutNutrient = 0.0
+	private fun initLogic(){
+		dish.initialize()
+		dish.putGerm(Conf.germCount)
+	}
+	private fun processLogic(){
+		for (i in 0 until Conf.processCount) {
+			dish.process()
+		}
+		if (dish.processedTime - lastTimePutNutrient > Conf.nutrientInterval) {
+			dish.putNutrient()
+		}
+	}
 	
 }
 

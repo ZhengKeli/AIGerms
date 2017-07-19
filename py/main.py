@@ -1,65 +1,145 @@
+import struct
+import sys
+
 import core
-import io
+
+# stdio
+rawStdin = sys.stdin.buffer.raw
+rawStdout = sys.stdout.buffer
 
 
+# reader
+def read_int():
+    read_bytes = rawStdin.read(4)
+    return struct.unpack('!i', read_bytes)[0]
+
+
+def read_float():
+    return struct.unpack("!f", rawStdin.read(4))[0]
+
+
+def read_list(decoder: callable):
+    size = read_int()
+    return (decoder() for x in range(size))
+
+
+def read_feel():
+    # 2+2+1 = 5
+    feel = struct.unpack("!5f", rawStdin.read(5 * 4))
+    return feel
+
+
+def read_log():
+    # 5+2+1 = 8
+    log = struct.unpack("!8f", rawStdin.read(8 * 4))
+    return log
+
+
+# writers
+def write_int(value):
+    rawStdout.write(struct.pack("!i", value))
+
+
+def write_float(value):
+    rawStdout.write(struct.pack("!f", value))
+
+
+def write_list(objects: list, encoder: callable(object)):
+    write_int(len(objects))
+    for item in objects:
+        encoder(item)
+
+
+def write_point2d(value):
+    rawStdout.write(struct.pack("!2f", *value))
+
+
+def flush_stdout():
+    rawStdout.flush()
+
+
+# commands
+COM_INITIALIZE = 0
+COM_FINALIZE = 1
+COM_RUN_ACTOR = 2
+COM_TRAIN_CRITIC = 3
+COM_TRAIN_ACTOR = 4
+
+# status
+STU_SUCCEED = 0
+STU_FAILED = 1
+
+
+# actions
 def initialize():
     core.initialize()
-    io.write_int(io.STU_SUCCEED)
-    io.flush_stdout()
+    write_int(STU_SUCCEED)
+    flush_stdout()
 
 
 def finalize():
     core.finalize()
-    io.write_int(io.STU_SUCCEED)
-    io.flush_stdout()
+    write_int(STU_SUCCEED)
+    flush_stdout()
 
 
 def run_actor():
-    val_feel_nutrient = io.read_vector_list()
-    val_feel_germ = io.read_vector_list()
-    val_feel_energy = io.read_float_list()
+    val_feel = read_list(read_feel)
+
+    val_feel_nutrient = val_feel[:, 0:2]
+    val_feel_germ = val_feel[:, 2:4]
+    val_feel_energy = val_feel[:, 4]
+
     val_act_velocity = core.run_actor(val_feel_nutrient, val_feel_germ, val_feel_energy)
-    io.write_int(io.STU_SUCCEED)
-    io.write_vector_list(val_act_velocity)
-    io.flush_stdout()
+
+    write_int(STU_SUCCEED)
+    write_list(val_act_velocity, write_point2d)
+    flush_stdout()
 
 
 def train_critic():
-    val_feel_nutrient = io.read_vector_list()
-    val_feel_germ = io.read_vector_list()
-    val_feel_energy = io.read_float_list()
-    val_act_velocity = io.read_vector_list()
-    val_real_loss = io.read_float_list()
+    val_log = read_log()
+
+    val_feel_nutrient = val_log[:, 0:2]
+    val_feel_germ = val_log[:, 2:4]
+    val_feel_energy = val_log[:, 4]
+    val_act_velocity = val_log[:, 5:7]
+    val_real_loss = val_log[:, 7]
     core.train_critic(val_feel_nutrient, val_feel_germ, val_feel_energy, val_act_velocity, val_real_loss)
-    io.write_int(io.STU_SUCCEED)
-    io.flush_stdout()
+
+    write_int(STU_SUCCEED)
+    flush_stdout()
 
 
 def train_actor():
-    val_feel_nutrient = io.read_vector_list()
-    val_feel_germ = io.read_vector_list()
-    val_feel_energy = io.read_float_list()
+    val_feel = read_list(read_feel)
+
+    val_feel_nutrient = val_feel[:, 0:2]
+    val_feel_germ = val_feel[:, 2:4]
+    val_feel_energy = val_feel[:, 4]
     core.train_actor(val_feel_nutrient, val_feel_germ, val_feel_energy)
-    io.write_int(io.STU_SUCCEED)
-    io.flush_stdout()
+
+    write_int(STU_SUCCEED)
+    flush_stdout()
 
 
+# main cycle
 def main():
     while True:
-        com = io.read_int()
-        if com == io.COM_INITIALIZE:
+        com = read_int()
+        if com == COM_INITIALIZE:
             initialize()
-        elif com == io.COM_FINALIZE:
+        elif com == COM_FINALIZE:
             finalize()
             break
-        elif com == io.COM_RUN_ACTOR:
+        elif com == COM_RUN_ACTOR:
             run_actor()
-        elif com == io.COM_TRAIN_CRITIC:
+        elif com == COM_TRAIN_CRITIC:
             train_critic()
-        elif com == io.COM_TRAIN_ACTOR:
+        elif com == COM_TRAIN_ACTOR:
             train_actor()
         else:
-            print("the command is wrong!")
+            print("the command", com, "is wrong!")
             break
 
 

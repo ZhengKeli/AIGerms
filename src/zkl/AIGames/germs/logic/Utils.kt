@@ -1,7 +1,9 @@
 package zkl.AIGames.germs.logic
 
+import zkl.tools.math.MT
 import zkl.tools.math.Point2D
 import zkl.tools.math.mutableClone
+import zkl.tools.math.pointOf
 
 fun Point2D.limitRound(r: Double):Point2D {
 	val absolute = this.absolute()
@@ -32,3 +34,5 @@ fun Point2D.limitRect(width: Double, height: Double): Point2D {
 	}
 	return re
 }
+
+fun randomPoint2D(max:Double) = pointOf(MT.randomMirror(max), MT.randomMirror(max))

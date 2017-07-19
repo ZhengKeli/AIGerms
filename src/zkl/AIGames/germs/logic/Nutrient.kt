@@ -10,7 +10,7 @@ class Nutrient{
 		set(value) { field = value.limitRect(Conf.dishSize,Conf.dishSize) }
 	
 	var velocity: Point2D = zeroPoint2D()
-		set(value) { field = value.limitRound(Conf.maxNutrientVelocity) }
+		set(value) { field = value.limitRound(Conf.nutrientMaxVelocity) }
 	
 	var amount: Double = 1.0
 }
