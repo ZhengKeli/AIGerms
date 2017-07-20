@@ -5,10 +5,13 @@ import core
 
 
 def get_real_loss(val_feel_nutrient, val_feel_germ, val_feel_energy, val_act_velocity):
-    return np.sum(np.square(val_act_velocity - (val_feel_nutrient - val_feel_germ)), 1)
+    return np.sum(np.square(val_act_velocity - (val_feel_nutrient)), 1)
 
 
 core.initialize()
+
+train_count = 10*1000
+train_group_size = 1000
 train_id = 1
 while True:
     patchSize = 100
@@ -26,21 +29,21 @@ while True:
     val_real_loss = get_real_loss(val_feel_nutrient, val_feel_germ, val_feel_energy, val_act_velocity)
 
     # train
-    (result_train_critic, _, val_loss_loss) = core.train_critic(
-        val_feel_nutrient, val_feel_germ, val_feel_energy, val_act_velocity, val_real_loss)
-    (result_train_actor, val_ass_loss) = core.train_actor(val_feel_nutrient, val_feel_germ, val_feel_energy, 0.01)
+    (result_train_critic, _, val_loss_loss) = \
+        core.train_critic(val_feel_nutrient, val_feel_germ, val_feel_energy, val_act_velocity, val_real_loss)
+    (result_train_actor, val_ass_loss) = core.train_actor(val_feel_nutrient, val_feel_germ, val_feel_energy)
 
-    if train_id % 1000 == 0:
+    if train_id % train_group_size == 0:
         print("[", train_id, "]")
         print("loss_loss =", np.average(val_loss_loss))
         print("ass_loss =", np.average(val_ass_loss))
         print()
-        if train_id % (10 * 1000) == 0:
-            core.save()
-            print("saved graph")
-            print()
-            if train_id >= 50 * 1000:
-                break
+
+    if train_id >= train_count:
+        core.save()
+        print("saved graph")
+        print()
+        break
 
     train_id += 1
 

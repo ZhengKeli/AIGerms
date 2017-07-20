@@ -22,6 +22,10 @@ class Dish(val size:Double = Conf.dishSize) {
 		nerveCore.initialize()
 		println("initialization done")
 	}
+	fun finalize() {
+		nerveCore.finalize()
+		println("graph saved")
+	}
 	fun process(time: Double= Conf.processUnit) {
 		
 		//nutrients move
@@ -120,8 +124,9 @@ class Dish(val size:Double = Conf.dishSize) {
 		
 		//apply result
 		_germs.forEachIndexed { index, germ ->
-			germ.wantVelocity = actVelocity[index]
-			germ.disturbVelocity = randomPoint2D(Conf.germMaxDisturbVelocity)
+			val wantVelocity = actVelocity[index]
+			val disturbVelocity = randomPoint2D(1.0)
+			germ.actVelocity = wantVelocity * (1.0 - Conf.disturbRate) + disturbVelocity * Conf.disturbRate
 			germ.velocity = germ.actVelocity * Conf.germMaxVelocity
 			
 			germ.logs.addLast(
@@ -143,12 +148,23 @@ class Dish(val size:Double = Conf.dishSize) {
 	}
 	fun trainActor() {
 		
+		val availableTime = processedTime - Conf.hopeTime
+		
 		val trainableLogs = ArrayList<GermLog>(_germs.size)
 		_germs.forEach { germ->
+			
 			//take the available logs
-			while(germ.logs.size>Conf.maxLogCount){
-				trainableLogs.add(germ.logs.removeLast())
+			val iterator = germ.logs.iterator()
+			while (iterator.hasNext()) {
+				val log = iterator.next()
+				if (log.actTime < availableTime) {
+					trainableLogs.add(log)
+					iterator.remove()
+				} else {
+					break
+				}
 			}
+			
 		}
 		
 		//train nerveCore if there are available logs
@@ -160,4 +176,6 @@ class Dish(val size:Double = Conf.dishSize) {
 		trainedCount += trainableLogs.size
 		println("trained sample [$trainedCount]")
 	}
+	
+	
 }

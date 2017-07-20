@@ -31,7 +31,10 @@ class GermsApplication : Application() {
 		stage.scene = Scene(initDishView(), Conf.dishSize, Conf.dishSize)
 		stage.title = "germs"
 		stage.isIconified = false
-		stage.setOnHidden { wantProcess=false }
+		stage.setOnHidden {
+			stopProcess()
+			dish.finalize()
+		}
 		stage.show()
 	}
 	private fun initDishView(): Parent {
@@ -39,15 +42,9 @@ class GermsApplication : Application() {
 		
 		rootNote = Pane(dishView)
 		rootNote.setOnMouseClicked {
-			if(!wantProcess){
-				initLogic()
-				startProcess()
-			}else{
-				stopProcess()
-				dish.nerveCore.finalize()
-				println("graph saved")
-				stage.close()
-			}
+			initLogic()
+			startProcess()
+			rootNote.onMouseClicked = null
 		}
 		rootNote.background= Background(BackgroundFill(Color.DARKGRAY,null,null))
 		
@@ -88,6 +85,7 @@ class GermsApplication : Application() {
 				updateFrame()
 			}
 		} catch (e: Exception) {
+			e.printStackTrace()
 			Platform.runLater {
 				stopProcess()
 			}
@@ -99,17 +97,25 @@ class GermsApplication : Application() {
 	
 	//logic
 	val dish = Dish()
-	val lastTimePutNutrient = 0.0
+	var lastTimePutNutrient = 0.0
+	var lastTimeRunActor = 0.0
 	private fun initLogic(){
 		dish.initialize()
 		dish.putGerm(Conf.germCount)
 	}
 	private fun processLogic(){
-		for (i in 0 until Conf.processCount) {
+		repeat(Conf.processCount){
 			dish.process()
-		}
-		if (dish.processedTime - lastTimePutNutrient > Conf.nutrientInterval) {
-			dish.putNutrient()
+			if (dish.processedTime - lastTimePutNutrient > Conf.nutrientInterval) {
+				dish.putNutrient()
+				lastTimePutNutrient = dish.processedTime
+			}
+			if (dish.processedTime - lastTimeRunActor > Conf.actInterval) {
+				dish.runActor()
+				lastTimeRunActor = dish.processedTime
+			}
+			dish.maintainGermLogs()
+			dish.trainActor()
 		}
 	}
 	

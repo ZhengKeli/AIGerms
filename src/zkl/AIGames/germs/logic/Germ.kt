@@ -25,11 +25,7 @@ class Germ(val dish:Dish) {
 	
 	//think in nerve
 	var feel: GermFeel = GermFeel(zeroPoint2D(), zeroPoint2D(), 0.0)
-	
-	var wantVelocity: Point2D = zeroPoint2D()
-	var disturbVelocity: Point2D = zeroPoint2D() // 0..1
-	val actVelocity: Point2D get() = wantVelocity + disturbVelocity
-	
+	var actVelocity: Point2D = zeroPoint2D() // 0..1
 	val logs = LinkedList<GermLog>()
 	
 }

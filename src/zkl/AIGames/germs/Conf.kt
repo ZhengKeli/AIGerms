@@ -18,10 +18,10 @@ object Conf {
 	val germCount = 10
 	val germRadius = 20.0
 	val germMaxVelocity = 10.0
-	val germStaticEnergyCost = 0.001
+	val germStaticEnergyCost = 0.01
 	val germMovingEnergyCost = 0.001
 	val germFieldConstant = 0.5e4
-	val germStarveToDeath = true
+	val germStarveToDeath = false
 	
 	//nutrient
 	val nutrientInterval = 5.0
@@ -32,12 +32,11 @@ object Conf {
 	
 	
 	//training
-	val actInterval = 5.0
-	val hopeTime = 10.0
-	val maxLogCount = hopeTime / processUnit
+	val actInterval = 3.0
+	val hopeTime = 20.0
 	val realLoss: (Germ)->Double = { germ ->
 		1.0/(germ.energy+0.1)
 	}
-	val germMaxDisturbVelocity = 0.3
+	val disturbRate = 0.0
 	
 }

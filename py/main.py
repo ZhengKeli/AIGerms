@@ -78,6 +78,7 @@ def initialize():
     core.initialize()
     write_int(STU_SUCCEED)
     flush_stdout()
+    stderr.flush()
 
 
 def finalize():
