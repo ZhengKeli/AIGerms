@@ -6,6 +6,7 @@ import zkl.tools.math.Point2D
 import zkl.tools.math.pointOf
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import kotlin.concurrent.thread
 
 
 class TFNerveCore : NerveCore {
@@ -26,6 +27,16 @@ class TFNerveCore : NerveCore {
 		process = Runtime.getRuntime().exec("python ./py/main.py")
 		dataInput = DataInputStream(process.inputStream)
 		dataOutput = DataOutputStream(process.outputStream)
+		thread(name = "pythonErrorThread") {
+			process.errorStream.bufferedReader().use {
+				while(true){
+					val line: String = it.readLine() ?: break
+					System.err.println("[python] $line")
+				}
+			}
+			System.err.println("[python] exited")
+		}
+		
 		
 		dataOutput.writeInt(COM_INITIALIZE)
 		dataOutput.flush()

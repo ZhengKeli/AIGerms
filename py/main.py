@@ -1,11 +1,14 @@
 import struct
 import sys
 
+import numpy as np
+
 import core
 
 # stdio
 rawStdin = sys.stdin.buffer.raw
 rawStdout = sys.stdout.buffer
+stderr = sys.stderr
 
 
 # reader
@@ -20,7 +23,7 @@ def read_float():
 
 def read_list(decoder: callable):
     size = read_int()
-    return (decoder() for x in range(size))
+    return [decoder() for x in range(size)]
 
 
 def read_feel():
@@ -84,7 +87,7 @@ def finalize():
 
 
 def run_actor():
-    val_feel = read_list(read_feel)
+    val_feel = np.array(read_list(read_feel))
 
     val_feel_nutrient = val_feel[:, 0:2]
     val_feel_germ = val_feel[:, 2:4]
@@ -98,7 +101,7 @@ def run_actor():
 
 
 def train_critic():
-    val_log = read_log()
+    val_log = np.array(read_list(read_log))
 
     val_feel_nutrient = val_log[:, 0:2]
     val_feel_germ = val_log[:, 2:4]
@@ -112,7 +115,7 @@ def train_critic():
 
 
 def train_actor():
-    val_feel = read_list(read_feel)
+    val_feel = np.array(read_list(read_feel))
 
     val_feel_nutrient = val_feel[:, 0:2]
     val_feel_germ = val_feel[:, 2:4]
