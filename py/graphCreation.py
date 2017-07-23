@@ -17,7 +17,7 @@ weights_actor2 = tf.Variable(tf.random_uniform([30, 2], -1.0, 1.0), name="weight
 bias_actor2 = tf.Variable(tf.random_uniform([2], -0.1, 0.1), name="bias_actor2")
 output_actor2 = tf.nn.tanh(tf.matmul(input_actor2, weights_actor2) + bias_actor2, "output_actor2")  # [-1,2]
 
-act_velocity = tf.multiply(output_actor2, 1.0, "act_velocity")  # [-1,2]
+act_velocity = tf.multiply(output_actor2, 1.5, "act_velocity")  # [-1,2]
 
 # critic network
 input_critic1 = tf.concat([feel_nutrient, feel_germ, feel_energy, act_velocity], 1, "input_critic1")  # [-1,7]
@@ -36,7 +36,7 @@ bias_critic3 = tf.Variable(tf.random_uniform([1], -1.0, 1.0), name="bias_critic3
 output_critic3 = tf.nn.tanh(tf.matmul(input_critic3, weights_critic3) + bias_critic3, "output_critic3")  # [-1,1]
 
 # train
-ass_loss = tf.multiply(tf.reduce_sum(output_critic3, -1), 10.0, name="ass_loss")  # [-1]
+ass_loss = tf.multiply(tf.reduce_sum(output_critic3, -1) + 1.0, 5.0, name="ass_loss")  # [-1]
 real_loss = tf.placeholder(tf.float32, name="real_loss")  # [-1]
 loss_loss = tf.square(ass_loss - real_loss, name="loss_loss")  # [-1]
 

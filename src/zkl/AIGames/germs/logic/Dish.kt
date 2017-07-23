@@ -3,6 +3,7 @@ package zkl.AIGames.germs.logic
 import zkl.AIGames.germs.Conf
 import zkl.AIGames.germs.nerveCore.NerveCore
 import zkl.AIGames.germs.nerveCore.TFNerveCore
+import zkl.tools.math.MT
 import zkl.tools.math.mutableZeroPoint2D
 import zkl.tools.math.pointOf
 
@@ -81,10 +82,12 @@ class Dish(val size:Double = Conf.dishSize) {
 	}
 	fun putNutrient(count:Int=1) {
 		repeat(count){
-			val nutrient = Nutrient()
-			nutrient.amount = Conf.nutrientAmount
-			nutrient.position = pointOf(Math.random() * size, Math.random() * size)
-			_nutrients.add(nutrient)
+			if (_nutrients.size < Conf.nutrientMaxCount) {
+				val nutrient = Nutrient()
+				nutrient.amount = MT.random(Conf.nutrientMinAmount,Conf.nutrientMaxAmount)
+				nutrient.position = pointOf(Math.random() * size, Math.random() * size)
+				_nutrients.add(nutrient)
+			}
 		}
 	}
 	
@@ -92,7 +95,7 @@ class Dish(val size:Double = Conf.dishSize) {
 	//training
 	val nerveCore: NerveCore = TFNerveCore()
 	var trainedCount = 0
-	fun runActor() {
+	fun runActor(isTraining:Boolean=true) {
 		
 		//feel
 		val feels = _germs.map { germ ->
@@ -103,7 +106,7 @@ class Dish(val size:Double = Conf.dishSize) {
 					val m = Conf.nutrientFieldConstant * nutrient.amount / r / r
 					selfOffset(d * (m / r))
 				}
-			}
+			}.limitRound(Conf.maxFeelNutrient)
 			val feelGerm = mutableZeroPoint2D().apply {
 				_germs.forEach { otherGerm ->
 					if (otherGerm != germ) {
@@ -113,67 +116,66 @@ class Dish(val size:Double = Conf.dishSize) {
 						selfOffset(d * (m / r))
 					}
 				}
-			}
+			}.limitRound(Conf.maxFeelGerm)
 			val energy = germ.energy
 			germ.feel = GermFeel(feelNutrient, feelGerm, energy)
 			germ.feel
 		}
 		
 		//run nerveCore
-		val actVelocity = nerveCore.runActor(feels)
+		val actVelocities = nerveCore.runActor(feels)
 		
 		//apply result
 		_germs.forEachIndexed { index, germ ->
-			val wantVelocity = actVelocity[index]
-			val disturbVelocity = randomPoint2D(1.0)
-			germ.actVelocity = wantVelocity * (1.0 - Conf.disturbRate) + disturbVelocity * Conf.disturbRate
-			germ.velocity = germ.actVelocity * Conf.germMaxVelocity
+			val wantVelocity = actVelocities[index].limitRound(1.0)
 			
-			germ.logs.addLast(
-				GermLog(processedTime, germ.feel, germ.actVelocity, Conf.realLoss(germ))
-			)
-			
-		}
-		
-	}
-	fun maintainGermLogs(){
-		_germs.forEach { germ ->
-			val nowRealLoss = Conf.realLoss(germ)
-			germ.logs.forEach { log ->
-				if (nowRealLoss < log.realLoss) {
-					log.realLoss = nowRealLoss
-				}
+			if (isTraining) {
+				val disturbVelocity = randomPoint2D(1.0)
+				val actVelocity = wantVelocity * (1.0 - Conf.disturbRate) + disturbVelocity * Conf.disturbRate
+				germ.actVelocity = actVelocity.limitRound(Conf.maxActVelocity)
+				
+				germ.velocity = germ.actVelocity * Conf.germMaxVelocity
+				
+				GermLog(processedTime, germ.feel, germ.actVelocity, Conf.instantRealLoss(germ))
+					.let { germ.logs.addLast(it) }
+			}else{
+				val actVelocity = wantVelocity
+				germ.actVelocity = actVelocity.limitRound(Conf.maxActVelocity)
+				germ.velocity = germ.actVelocity * Conf.germMaxVelocity
 			}
-		}
-	}
-	fun trainActor() {
-		
-		val availableTime = processedTime - Conf.hopeTime
-		
-		val trainableLogs = ArrayList<GermLog>(_germs.size)
-		_germs.forEach { germ->
 			
-			//take the available logs
+		}
+		
+	}
+	
+	fun trainActor() {
+		val availableTime = processedTime - Conf.hopeTime
+		val availableLogs = ArrayList<GermLog>(_germs.size)
+		_germs.forEach { germ->
+			val nowRealLoss = Conf.instantRealLoss(germ)
+			
 			val iterator = germ.logs.iterator()
 			while (iterator.hasNext()) {
 				val log = iterator.next()
 				if (log.actTime < availableTime) {
-					trainableLogs.add(log)
+					//take the available logs
+					availableLogs.add(log)
 					iterator.remove()
 				} else {
-					break
+					//maintain other logs
+					log.realLoss = nowRealLoss
 				}
 			}
 			
 		}
 		
 		//train nerveCore if there are available logs
-		if (trainableLogs.isEmpty()) return
+		if (availableLogs.isEmpty()) return
 		
-		nerveCore.trainCritic(trainableLogs)
-		nerveCore.trainActor(trainableLogs.map { it.feel })
+		nerveCore.trainCritic(availableLogs)
+		nerveCore.trainActor(availableLogs.map { it.feel })
 		
-		trainedCount += trainableLogs.size
+		trainedCount += availableLogs.size
 		println("trained sample [$trainedCount]")
 	}
 	

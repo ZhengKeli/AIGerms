@@ -10,33 +10,61 @@ import zkl.AIGames.germs.logic.Germ
 class GermView : Parent() {
 	
 	val circle_body = Circle()
-	val line_velocity = Line()
+	val line_actVelocity = Line()
+	val line_feelNutrient = Line()
+	val line_feelGerm = Line()
 	init {
 		
-		circle_body.fill = Color.WHITE
-		circle_body.radius = Conf.germRadius
+		circle_body.run {
+			fill = Color.WHITE
+			radius = Conf.germRadius
+		}
+		line_actVelocity.run {
+			strokeWidth = 3.0
+			stroke = Color.RED
+		}
+		line_feelNutrient.run {
+			strokeWidth = 1.0
+			stroke = Color.BLUE
+		}
+		line_feelGerm.run {
+			strokeWidth = 1.0
+			stroke = Color.WHITE
+		}
 		
-		line_velocity.strokeWidth = 3.0
-		line_velocity.stroke = Color.RED
-		
-		this.children.addAll(circle_body,line_velocity)
+		this.children.addAll(circle_body,line_feelNutrient,line_feelGerm, line_actVelocity)
 		
 	}
 	
 	
 	fun update(germ: Germ) {
-		
-		circle_body.centerX = germ.position.x
-		circle_body.centerY = germ.position.y
-		val colorRate = germ.energy * 0.9 + 0.1
-		circle_body.fill = Color(1.0, 1.0, 1.0, colorRate)
-		
-		line_velocity.startX = germ.position.x
-		line_velocity.startY = germ.position.y
-		val endPosition = germ.position + germ.velocity *3.0
-		line_velocity.endX = endPosition.x
-		line_velocity.endY = endPosition.y
-		
+		circle_body.run {
+			centerX = germ.position.x
+			centerY = germ.position.y
+			val colorRate = germ.energy * 0.9 + 0.1
+			fill = Color(1.0, 1.0, 1.0, colorRate)
+		}
+		line_actVelocity.run{
+			startX = germ.position.x
+			startY = germ.position.y
+			val endPosition = germ.position + germ.actVelocity *20.0
+			endX = endPosition.x
+			endY = endPosition.y
+		}
+		line_feelNutrient.run {
+			startX = germ.position.x
+			startY = germ.position.y
+			val endPosition = germ.position + germ.feel.nutrient *10.0
+			endX = endPosition.x
+			endY = endPosition.y
+		}
+		line_feelGerm.run {
+			startX = germ.position.x
+			startY = germ.position.y
+			val endPosition = germ.position + germ.feel.germ *10.0
+			endX = endPosition.x
+			endY = endPosition.y
+		}
 	}
 	
 }

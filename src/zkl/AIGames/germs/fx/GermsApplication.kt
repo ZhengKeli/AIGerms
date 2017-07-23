@@ -111,11 +111,12 @@ class GermsApplication : Application() {
 				lastTimePutNutrient = dish.processedTime
 			}
 			if (dish.processedTime - lastTimeRunActor > Conf.actInterval) {
-				dish.runActor()
+				dish.runActor(Conf.isTraining)
 				lastTimeRunActor = dish.processedTime
 			}
-			dish.maintainGermLogs()
-			dish.trainActor()
+			if (Conf.isTraining) {
+				dish.trainActor()
+			}
 		}
 	}
 	
