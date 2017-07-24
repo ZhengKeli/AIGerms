@@ -128,26 +128,22 @@ class Dish(val size:Double = Conf.dishSize) {
 		//apply result
 		_germs.forEachIndexed { index, germ ->
 			val wantVelocity = actVelocities[index].limitRound(1.0)
-			
 			if (isTraining) {
-				val disturbVelocity = randomPoint2D(1.0)
-				val actVelocity = wantVelocity * (1.0 - Conf.disturbRate) + disturbVelocity * Conf.disturbRate
-				germ.actVelocity = actVelocity.limitRound(Conf.maxActVelocity)
-				
+				germ.actVelocity =
+					if (Math.random() > Conf.disturbRate) wantVelocity
+					else randomPoint2D(1.0)
 				germ.velocity = germ.actVelocity * Conf.germMaxVelocity
 				
 				GermLog(processedTime, germ.feel, germ.actVelocity, Conf.instantRealLoss(germ))
 					.let { germ.logs.addLast(it) }
 			}else{
-				val actVelocity = wantVelocity
-				germ.actVelocity = actVelocity.limitRound(Conf.maxActVelocity)
+				germ.actVelocity = wantVelocity
 				germ.velocity = germ.actVelocity * Conf.germMaxVelocity
 			}
 			
 		}
 		
 	}
-	
 	fun trainActor() {
 		val availableTime = processedTime - Conf.hopeTime
 		val availableLogs = ArrayList<GermLog>(_germs.size)
@@ -179,5 +175,8 @@ class Dish(val size:Double = Conf.dishSize) {
 		println("trained sample [$trainedCount]")
 	}
 	
+	fun getAverageEnergy(): Double {
+		return _germs.sumByDouble { it.energy } / _germs.size
+	}
 	
 }

@@ -99,6 +99,7 @@ class GermsApplication : Application() {
 	val dish = Dish()
 	var lastTimePutNutrient = 0.0
 	var lastTimeRunActor = 0.0
+	var energyLogs = ArrayList<Double>(Conf.energyLogBufferSize)
 	private fun initLogic(){
 		dish.initialize()
 		dish.putGerm(Conf.germCount)
@@ -117,7 +118,14 @@ class GermsApplication : Application() {
 			if (Conf.isTraining) {
 				dish.trainActor()
 			}
+			
+			energyLogs.add(dish.getAverageEnergy())
+			if (energyLogs.size > Conf.energyLogBufferSize) {
+				println("average energy: ${energyLogs.average()}")
+				energyLogs.clear()
+			}
 		}
+		
 	}
 	
 }
