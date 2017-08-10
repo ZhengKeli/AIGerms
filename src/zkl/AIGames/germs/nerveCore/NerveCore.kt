@@ -6,7 +6,7 @@ import zkl.tools.math.Point2D
 
 interface NerveCore {
 	fun initialize()
-	fun finalize()
+	fun finalize(saveGraph:Boolean = true)
 	
 	fun runActor(feels:List<GermFeel>):List<Point2D>
 	fun trainCritic(germLog:List<GermLog>)

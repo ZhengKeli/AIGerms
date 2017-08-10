@@ -23,9 +23,9 @@ class Dish(val size:Double = Conf.dishSize) {
 		nerveCore.initialize()
 		println("initialization done")
 	}
-	fun finalize() {
-		nerveCore.finalize()
-		println("graph saved")
+	fun finalize(saveGraph:Boolean = Conf.isTraining) {
+		nerveCore.finalize(saveGraph)
+		if(saveGraph) println("graph saved")
 	}
 	fun process(time: Double= Conf.processUnit) {
 		
@@ -43,7 +43,7 @@ class Dish(val size:Double = Conf.dishSize) {
 			//move
 			germ.run {
 				position += velocity * time
-				energy -= (Conf.germMovingEnergyCost * velocity.absolute() + Conf.germStaticEnergyCost) * time
+				energy -= Conf.germEnergyCost(this) * time
 			}
 			
 			//eat

@@ -45,8 +45,9 @@ class TFNerveCore : NerveCore {
 		if (status != STU_SUCCEED) throw OperationFailedException("initialize", status)
 	}
 	
-	override fun finalize() {
+	override fun finalize(saveGraph:Boolean) {
 		dataOutput.writeInt(COM_FINALIZE)
+		dataOutput.writeInt(if (saveGraph) 0 else 1)
 		dataOutput.flush()
 		
 		val status = dataInput.readInt()

@@ -41,12 +41,12 @@ real_loss = tf.placeholder(tf.float32, name="real_loss")  # [-1]
 loss_loss = tf.square(ass_loss - real_loss, name="loss_loss")  # [-1]
 
 vars_actor = (weights_actor1, bias_actor1, weights_actor2, bias_actor2)
-learning_rate_actor = tf.Variable(0.01, name="learning_rate_actor")
+learning_rate_actor = tf.Variable(0.001, name="learning_rate_actor")
 train_actor = tf.train.AdamOptimizer(learning_rate_actor) \
     .minimize(tf.reduce_sum(ass_loss), var_list=vars_actor, name="train_actor")
 
 vars_critic = (weights_critic1, bias_critic1, weights_critic2, bias_critic2, weights_critic3, bias_critic3)
-learning_rate_critic = tf.Variable(0.01, name="learning_rate_critic")
+learning_rate_critic = tf.Variable(0.001, name="learning_rate_critic")
 train_critic = tf.train.AdamOptimizer(learning_rate_critic) \
     .minimize(tf.reduce_sum(loss_loss), var_list=vars_critic, name="train_critic")
 

@@ -1,7 +1,7 @@
 import struct
-import sys
 
 import numpy as np
+import sys
 
 import core
 
@@ -82,7 +82,8 @@ def initialize():
 
 
 def finalize():
-    core.finalize()
+    save = (read_int() == 0)
+    core.finalize(save)
     write_int(STU_SUCCEED)
     flush_stdout()
 

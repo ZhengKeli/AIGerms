@@ -13,18 +13,19 @@ object Conf {
 	val germCount = 6
 	val germRadius = 20.0
 	val germMaxVelocity = 1.0
-	val germStaticEnergyCost = 0.001
-	val germMovingEnergyCost = 0.001
+	val germEnergyCost = { germ: Germ ->
+		Math.pow(germ.velocity.absolute() / germMaxVelocity, 2.0) * 10e-4 + 1.0e-4
+	}
 	val germFieldConstant = 0.5e4
 	val germStarveToDeath = false
 	
 	//nutrient
-	val nutrientInterval = 20.0
-	val nutrientMaxCount = 200
-	val nutrientMaxAmount = 0.5
-	val nutrientMinAmount = 0.1
+	val nutrientInterval = 130.0
+	val nutrientMaxCount = 20
+	val nutrientMaxAmount = 0.7
+	val nutrientMinAmount = 0.3
 	val nutrientMaxVelocity = 0.1
-	val nutrientDisturbAcceleration = 0.0
+	val nutrientDisturbAcceleration = 1.0e-4
 	val nutrientFieldConstant = 1e4
 	
 	
@@ -37,12 +38,12 @@ object Conf {
 	}
 	
 	val isTraining = false
-	val hopeTime = 200.0
-	val actInterval = 20.0
-	val disturbRate = 0.1
+	val hopeTime = 100.0
+	val actInterval = hopeTime/2.0
+	val disturbRate = 0.9
 	
 	//process
-	val processCount = 5
+	val processCount = 1
 	val processUnit = 1.0
 	val frameInterval = 20L
 	
