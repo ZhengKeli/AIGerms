@@ -4,11 +4,12 @@ import zkl.AIGames.germs.Conf
 import zkl.AIGames.germs.nerveCore.NerveCore
 import zkl.AIGames.germs.nerveCore.TFNerveCore
 import zkl.tools.math.MT
+import zkl.tools.math.Point2D
 import zkl.tools.math.mutableZeroPoint2D
 import zkl.tools.math.pointOf
 
 
-class Dish(val size:Double = Conf.dishSize) {
+class Dish(val dishSize:Double = Conf.dishSize) {
 	
 	val germs: List<Germ> get() = _germs
 	private val _germs = ArrayList<Germ>()
@@ -18,21 +19,21 @@ class Dish(val size:Double = Conf.dishSize) {
 	
 	//processing
 	var processedTime = 0.0
-	fun initialize() {
+	@Synchronized fun initialize() {
 		println("initializing nerve network")
 		nerveCore.initialize()
 		println("initialization done")
 	}
-	fun finalize(saveGraph:Boolean = Conf.isTraining) {
+	@Synchronized fun finalize(saveGraph:Boolean = Conf.isTraining) {
 		nerveCore.finalize(saveGraph)
 		if(saveGraph) println("graph saved")
 	}
-	fun process(time: Double= Conf.processUnit) {
+	@Synchronized fun process(time: Double= Conf.processUnit) {
 		
 		//nutrients move
 		_nutrients.forEach {
 			it.run {
-				velocity += randomPoint2D(Conf.nutrientDisturbAcceleration)
+				velocity += randomPoint2D(Conf.nutrientDisturb)
 				position += velocity * time
 			}
 		}
@@ -73,29 +74,34 @@ class Dish(val size:Double = Conf.dishSize) {
 		processedTime+=time
 	}
 	
-	fun putGerm(count:Int=1) {
+	@Synchronized fun putGerm(count:Int=1) {
 		repeat(count){
 			val germ = Germ(this)
-			germ.position = pointOf(Math.random() * size, Math.random() * size)
+			germ.position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
 			_germs.add(germ)
 		}
 	}
-	fun putNutrient(count:Int=1) {
+	@Synchronized fun putRandomNutrients(count:Int=1) {
 		repeat(count){
 			if (_nutrients.size < Conf.nutrientMaxCount) {
-				val nutrient = Nutrient()
-				nutrient.amount = MT.random(Conf.nutrientMinAmount,Conf.nutrientMaxAmount)
-				nutrient.position = pointOf(Math.random() * size, Math.random() * size)
-				_nutrients.add(nutrient)
+				val amount = MT.random(Conf.nutrientRange.start, Conf.nutrientRange.endInclusive)
+				val position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
+				putNutrient(amount, position)
 			}
 		}
+	}
+	@Synchronized fun putNutrient(amount:Double,position: Point2D) {
+		val nutrient = Nutrient()
+		nutrient.amount = amount
+		nutrient.position = position
+		_nutrients.add(nutrient)
 	}
 	
 	
 	//training
 	val nerveCore: NerveCore = TFNerveCore()
 	var trainedCount = 0
-	fun runActor(isTraining:Boolean=true) {
+	@Synchronized fun runActor(isTraining:Boolean=true) {
 		
 		//feel
 		val feels = _germs.map { germ ->
@@ -103,22 +109,32 @@ class Dish(val size:Double = Conf.dishSize) {
 				_nutrients.forEach { nutrient ->
 					val d = nutrient.position - germ.position
 					val r = Math.max(d.absolute(), 1.0)
-					val m = Conf.nutrientFieldConstant * nutrient.amount / r / r
+					val m = Conf.feelNutrientScale * nutrient.amount / r / r
 					selfOffset(d * (m / r))
 				}
-			}.limitRound(Conf.maxFeelNutrient)
+			}.limitRound(Conf.feelNutrientMax)
 			val feelGerm = mutableZeroPoint2D().apply {
 				_germs.forEach { otherGerm ->
 					if (otherGerm != germ) {
 						val d = otherGerm.position - germ.position
 						val r = Math.max(d.absolute(), Conf.germRadius)
-						val m = Conf.germFieldConstant / r / r
+						val m = Conf.feelGermScale / r / r
 						selfOffset(d * (m / r))
 					}
 				}
-			}.limitRound(Conf.maxFeelGerm)
+			}.limitRound(Conf.feelGermMax)
+			val feelWall = mutableZeroPoint2D().apply {
+				val dx1 = germ.position.x + 50.0
+				val dx2 = dishSize - germ.position.x+ 50.0
+				val dy1 = germ.position.y+ 50.0
+				val dy2 = dishSize - germ.position.y+ 50.0
+				val const = Conf.feelWallScale
+				selfOffset(
+					x = -const / (dx1 * dx1) + const / (dx2 * dx2),
+					y = -const / (dy1 * dy1) + const / (dy2 * dy2))
+			}
 			val energy = germ.energy
-			germ.feel = GermFeel(feelNutrient, feelGerm, energy)
+			germ.feel = GermFeel(feelNutrient, feelGerm, feelWall, energy)
 			germ.feel
 		}
 		
@@ -127,28 +143,37 @@ class Dish(val size:Double = Conf.dishSize) {
 		
 		//apply result
 		_germs.forEachIndexed { index, germ ->
-			val wantVelocity = actVelocities[index].limitRound(1.0)
-			if (isTraining) {
-				germ.actVelocity =
-					if (Math.random() > Conf.disturbRate) wantVelocity
-					else randomPoint2D(1.0)
-				germ.velocity = germ.actVelocity * Conf.germMaxVelocity
-				
-				GermLog(processedTime, germ.feel, germ.actVelocity, Conf.instantRealLoss(germ))
-					.let { germ.logs.addLast(it) }
-			}else{
-				germ.actVelocity = wantVelocity
-				germ.velocity = germ.actVelocity * Conf.germMaxVelocity
+			
+			//apply act
+			val wantAct = actVelocities[index].limitRound(1.0)
+			val disturbMode = if(isTraining) Conf.disturbMode else Conf.DisturbMode.none
+			germ.act = when (disturbMode) {
+				Conf.DisturbMode.none -> wantAct
+				Conf.DisturbMode.assign ->
+					if (Math.random() > Conf.disturbRate) wantAct
+					else gaussianRandomPoint2D()
+				Conf.DisturbMode.offset ->
+					wantAct + gaussianRandomPoint2D(Conf.germMaxVelocity * Conf.disturbRate)
+			}
+			
+			//apply velocity
+			germ.velocity = germ.act * Conf.germMaxVelocity
+			
+			//add log if is training
+			if (Conf.isTraining) {
+				val realLoss = Conf.germRealLoss(germ)
+				val germLog = GermLog(processedTime, germ.feel, germ.act, realLoss)
+				germ.logs.addLast(germLog)
 			}
 			
 		}
 		
 	}
-	fun trainActor() {
+	@Synchronized fun trainActor() {
 		val availableTime = processedTime - Conf.hopeTime
 		val availableLogs = ArrayList<GermLog>(_germs.size)
 		_germs.forEach { germ->
-			val nowRealLoss = Conf.instantRealLoss(germ)
+			val nowRealLoss = Conf.germRealLoss(germ)
 			
 			val iterator = germ.logs.iterator()
 			while (iterator.hasNext()) {
@@ -175,7 +200,7 @@ class Dish(val size:Double = Conf.dishSize) {
 		println("trained sample [$trainedCount]")
 	}
 	
-	fun getAverageEnergy(): Double {
+	@Synchronized fun getAverageEnergy(): Double {
 		return _germs.sumByDouble { it.energy } / _germs.size
 	}
 	

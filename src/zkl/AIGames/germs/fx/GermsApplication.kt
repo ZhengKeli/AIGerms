@@ -11,6 +11,9 @@ import javafx.scene.paint.Color
 import javafx.stage.Stage
 import zkl.AIGames.germs.Conf
 import zkl.AIGames.germs.logic.Dish
+import zkl.AIGames.germs.logic.randomPoint2D
+import zkl.tools.math.MT
+import zkl.tools.math.pointOf
 import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
@@ -44,7 +47,16 @@ class GermsApplication : Application() {
 		rootNote.setOnMouseClicked {
 			initLogic()
 			startProcess()
-			rootNote.onMouseClicked = null
+			rootNote.setOnMouseClicked { e->
+				synchronized(dish) {
+					val clickPosition = pointOf(e.x,e.y)
+					repeat(10){
+						val position = clickPosition + randomPoint2D(30.0)
+						val amount = MT.random(Conf.nutrientRange.start, Conf.nutrientRange.endInclusive)
+						dish.putNutrient(amount, position)
+					}
+				}
+			}
 		}
 		rootNote.background= Background(BackgroundFill(Color.DARKGRAY,null,null))
 		
@@ -108,7 +120,7 @@ class GermsApplication : Application() {
 		repeat(Conf.processCount){
 			dish.process()
 			if (dish.processedTime - lastTimePutNutrient > Conf.nutrientInterval) {
-				dish.putNutrient()
+				dish.putRandomNutrients()
 				lastTimePutNutrient = dish.processedTime
 			}
 			if (dish.processedTime - lastTimeRunActor > Conf.actInterval) {

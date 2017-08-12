@@ -1,27 +1,24 @@
 import tensorflow as tf
 
-# feeling network
-feel_nutrient = tf.placeholder(tf.float32, name="feel_nutrient")  # [-1,2]
-feel_germ = tf.placeholder(tf.float32, name="feel_germ")  # [-1,2]
-feel_energy = tf.placeholder(tf.float32, name="feel_energy")  # [-1]
-feel_energy = tf.stack([feel_energy], 1)  # [-1,1]
-
 # actor network
-input_actor1 = tf.concat([feel_nutrient, feel_germ, feel_energy], 1, "input_actor1")  # [-1,5]
-weights_actor1 = tf.Variable(tf.random_uniform([5, 30], -1.0, 1.0), name="weights_actor1")
-bias_actor1 = tf.Variable(tf.random_uniform([30], -1.0, 1.0), name="bias_actor1")
-output_actor1 = tf.nn.tanh(tf.matmul(input_actor1, weights_actor1) + bias_actor1, "output_actor1")  # [-1,30]
+feel = tf.placeholder(tf.float32, name="feel")  # [-1,7]
 
-input_actor2 = output_actor1  # [-1,10]
-weights_actor2 = tf.Variable(tf.random_uniform([30, 2], -1.0, 1.0), name="weights_actor2")  # [-1,2]
-bias_actor2 = tf.Variable(tf.random_uniform([2], -0.1, 0.1), name="bias_actor2")
+input_actor1 = feel  # [-1,7]
+weights_actor1 = tf.Variable(tf.random_uniform([7, 20], -1.0, 1.0), name="weights_actor1")
+bias_actor1 = tf.Variable(tf.random_uniform([20], -1.0, 1.0), name="bias_actor1")
+output_actor1 = tf.nn.tanh(tf.matmul(input_actor1, weights_actor1) + bias_actor1, "output_actor1")  # [-1,20]
+
+input_actor2 = output_actor1  # [-1,20]
+weights_actor2 = tf.Variable(tf.random_uniform([20, 2], -1.0, 1.0), name="weights_actor2")  # [-1,2]
+bias_actor2 = tf.Variable(tf.random_uniform([2], -1.0, 1.0), name="bias_actor2")
 output_actor2 = tf.nn.tanh(tf.matmul(input_actor2, weights_actor2) + bias_actor2, "output_actor2")  # [-1,2]
 
-act_velocity = tf.multiply(output_actor2, 1.5, "act_velocity")  # [-1,2]
+act = tf.multiply(output_actor2, 1.0, "act")  # [-1,2]
+
 
 # critic network
-input_critic1 = tf.concat([feel_nutrient, feel_germ, feel_energy, act_velocity], 1, "input_critic1")  # [-1,7]
-weights_critic1 = tf.Variable(tf.random_uniform([7, 30], -1.0, 1.0), name="weights_critic1")
+input_critic1 = tf.concat([feel, act], 1, "input_critic1")  # [-1,9]
+weights_critic1 = tf.Variable(tf.random_uniform([9, 30], -1.0, 1.0), name="weights_critic1")
 bias_critic1 = tf.Variable(tf.random_uniform([30], -1.0, 1.0), name="bias_critic1")
 output_critic1 = tf.nn.tanh(tf.matmul(input_critic1, weights_critic1) + bias_critic1, "output_critic1")  # [-1,30]
 

@@ -9,8 +9,8 @@ fun main(args: Array<String>) {
 	nerveCore.initialize()
 	
 	val result= nerveCore.runActor(listOf(
-		GermFeel(nutrient = pointOf(0.0,0.0), germ = pointOf(0.0,0.0), energy = 0.5),
-		GermFeel(nutrient = pointOf(0.1,0.2), germ = pointOf(0.2,0.1), energy = 0.9)
+		GermFeel(nutrient = pointOf(0.0,0.0), germ = pointOf(0.0,0.0),wall = pointOf(0.0,0.0), energy = 0.5),
+		GermFeel(nutrient = pointOf(0.1,0.2), germ = pointOf(0.2,0.1),wall = pointOf(0.0,0.0), energy = 0.9)
 	))
 	result.forEach {
 		println(it)

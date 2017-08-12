@@ -1,9 +1,9 @@
 import struct
-
-import numpy as np
 import sys
 
-import core
+import numpy as np
+
+import nerveCore
 
 # stdio
 rawStdin = sys.stdin.buffer.raw
@@ -27,14 +27,14 @@ def read_list(decoder: callable):
 
 
 def read_feel():
-    # 2+2+1 = 5
-    feel = struct.unpack("!5f", rawStdin.read(5 * 4))
+    # 2+2+2+1 = 7
+    feel = struct.unpack("!7f", rawStdin.read(7 * 4))
     return feel
 
 
 def read_log():
-    # 5+2+1 = 8
-    log = struct.unpack("!8f", rawStdin.read(8 * 4))
+    # 7+2+1 = 10
+    log = struct.unpack("!10f", rawStdin.read(10 * 4))
     return log
 
 
@@ -47,7 +47,7 @@ def write_float(value):
     rawStdout.write(struct.pack("!f", value))
 
 
-def write_list(objects: list, encoder: callable(object)):
+def write_list(objects: list, encoder: callable):
     write_int(len(objects))
     for item in objects:
         encoder(item)
@@ -75,7 +75,7 @@ STU_FAILED = 1
 
 # actions
 def initialize():
-    core.initialize()
+    nerveCore.initialize()
     write_int(STU_SUCCEED)
     flush_stdout()
     stderr.flush()
@@ -83,34 +83,26 @@ def initialize():
 
 def finalize():
     save = (read_int() == 0)
-    core.finalize(save)
+    nerveCore.finalize(save)
     write_int(STU_SUCCEED)
     flush_stdout()
 
 
 def run_actor():
     val_feel = np.array(read_list(read_feel))
-
-    val_feel_nutrient = val_feel[:, 0:2]
-    val_feel_germ = val_feel[:, 2:4]
-    val_feel_energy = val_feel[:, 4]
-
-    val_act_velocity = core.run_actor(val_feel_nutrient, val_feel_germ, val_feel_energy)
+    val_act = nerveCore.run_actor(val_feel)
 
     write_int(STU_SUCCEED)
-    write_list(val_act_velocity, write_point2d)
+    write_list(val_act, write_point2d)
     flush_stdout()
 
 
 def train_critic():
     val_log = np.array(read_list(read_log))
-
-    val_feel_nutrient = val_log[:, 0:2]
-    val_feel_germ = val_log[:, 2:4]
-    val_feel_energy = val_log[:, 4]
-    val_act_velocity = val_log[:, 5:7]
-    val_real_loss = val_log[:, 7]
-    core.train_critic(val_feel_nutrient, val_feel_germ, val_feel_energy, val_act_velocity, val_real_loss)
+    val_feel = val_log[:, 0:7]
+    val_act = val_log[:, 7:9]
+    val_real_loss = val_log[:, 9]
+    nerveCore.train_critic(val_feel, val_act, val_real_loss)
 
     write_int(STU_SUCCEED)
     flush_stdout()
@@ -118,11 +110,7 @@ def train_critic():
 
 def train_actor():
     val_feel = np.array(read_list(read_feel))
-
-    val_feel_nutrient = val_feel[:, 0:2]
-    val_feel_germ = val_feel[:, 2:4]
-    val_feel_energy = val_feel[:, 4]
-    core.train_actor(val_feel_nutrient, val_feel_germ, val_feel_energy)
+    nerveCore.train_actor(val_feel)
 
     write_int(STU_SUCCEED)
     flush_stdout()

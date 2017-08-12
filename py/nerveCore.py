@@ -14,11 +14,8 @@ def initialize(path="./graph/aiGerms.meta", checkpoint="./graph"):
     global graph
     graph = sess.graph
 
-    graph.feel_nutrient = graph.get_tensor_by_name("feel_nutrient:0")
-    graph.feel_germ = graph.get_tensor_by_name("feel_germ:0")
-    graph.feel_energy = graph.get_tensor_by_name("feel_energy:0")
-
-    graph.act_velocity = graph.get_tensor_by_name("act_velocity:0")
+    graph.feel = graph.get_tensor_by_name("feel:0")
+    graph.act = graph.get_tensor_by_name("act:0")
 
     graph.ass_loss = graph.get_tensor_by_name("ass_loss:0")
     graph.real_loss = graph.get_tensor_by_name("real_loss:0")
@@ -57,26 +54,19 @@ def test():
     print(val_act_velocity)
 
 
-def run_actor(val_feel_nutrient, val_feel_germ, val_feel_energy):
+def run_actor(val_feel):
     return sess.run(
-        fetches=graph.act_velocity,
-        feed_dict={
-            graph.feel_nutrient: val_feel_nutrient,
-            graph.feel_germ: val_feel_germ,
-            graph.feel_energy: val_feel_energy
-        }
+        fetches=graph.act,
+        feed_dict={graph.feel: val_feel}
     )
 
 
 def train_critic(
-        val_feel_nutrient, val_feel_germ, val_feel_energy,
-        val_act_velocity, val_real_loss,
+        val_feel, val_act, val_real_loss,
         val_learning_rate=None):
     feed_dict = {
-        graph.feel_nutrient: val_feel_nutrient,
-        graph.feel_germ: val_feel_germ,
-        graph.feel_energy: val_feel_energy,
-        graph.act_velocity: val_act_velocity,
+        graph.feel: val_feel,
+        graph.act: val_act,
         graph.real_loss: val_real_loss
     }
     if val_learning_rate is not None:
@@ -87,11 +77,9 @@ def train_critic(
     )
 
 
-def train_actor(val_feel_nutrient, val_feel_germ, val_feel_energy, val_learning_rate=None):
+def train_actor(val_feel, val_learning_rate=None):
     feed_dict = {
-        graph.feel_nutrient: val_feel_nutrient,
-        graph.feel_germ: val_feel_germ,
-        graph.feel_energy: val_feel_energy,
+        graph.feel: val_feel,
         graph.real_loss: None
     }
     if val_learning_rate is not None:
