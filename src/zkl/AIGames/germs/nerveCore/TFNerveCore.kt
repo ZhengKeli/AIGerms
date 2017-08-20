@@ -107,7 +107,7 @@ fun DataOutputStream.writeGermFeel(germFeel: GermFeel) {
 }
 fun DataOutputStream.writeGermLog(germLog: GermLog) {
 	writeGermFeel(germLog.feel)
-	writePoint2D(germLog.actVelocity)
+	writePoint2D(germLog.act)
 	writeFloat(germLog.realLoss.toFloat())
 }
 

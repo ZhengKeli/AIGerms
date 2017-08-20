@@ -128,6 +128,7 @@ class GermsApplication : Application() {
 				lastTimeRunActor = dish.processedTime
 			}
 			if (Conf.isTraining) {
+				dish.maintainLogs()
 				dish.trainActor()
 			}
 			

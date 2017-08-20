@@ -101,6 +101,43 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 	//training
 	val nerveCore: NerveCore = TFNerveCore()
 	var trainedCount = 0
+	
+	val logBuffer = ArrayList<GermLog>(Conf.logBufferSize)
+	@Synchronized private fun addLog(germLog: GermLog) {
+		if (logBuffer.size < Conf.logBufferSize) {
+			logBuffer.add(germLog)
+		}else{
+			val randomIndex = (Math.random() * logBuffer.size).toInt()
+			logBuffer[randomIndex] = germLog
+		}
+	}
+	@Synchronized private fun getRandomLog(): GermLog {
+		val randomIndex = (Math.random() * logBuffer.size).toInt()
+		return logBuffer[randomIndex]
+	}
+	@Synchronized private fun getPatchLogs(patchSize: Int = Conf.trainPatchSize):List<GermLog>?{
+		if(logBuffer.size< patchSize*10) return null
+		return Array(patchSize){ getRandomLog() }.asList()
+	}
+	@Synchronized fun maintainLogs(){
+		val availableTime = processedTime - Conf.hopeTime
+		_germs.forEach { germ->
+			val nowRealLoss = Conf.germRealLoss(germ)
+			val iterator = germ.logs.iterator()
+			while (iterator.hasNext()) {
+				val log = iterator.next()
+				if (log.actTime < availableTime) {
+					//take the available logs
+					logBuffer.add(log)
+					iterator.remove()
+				} else {
+					//maintain other logs
+					log.realLoss = nowRealLoss
+				}
+			}
+		}
+	}
+	
 	@Synchronized fun runActor(isTraining:Boolean=true) {
 		
 		//feel
@@ -109,18 +146,17 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 				_nutrients.forEach { nutrient ->
 					val d = nutrient.position - germ.position
 					val r = Math.max(d.absolute(), 1.0)
-					val m = Conf.feelNutrientScale * nutrient.amount / r / r
-					selfOffset(d * (m / r))
+					val m = Conf.feelNutrientScale * nutrient.amount / r / r - 0.05
+					if(m>0) selfOffset(d * (m / r))
 				}
 			}.limitRound(Conf.feelNutrientMax)
 			val feelGerm = mutableZeroPoint2D().apply {
 				_germs.forEach { otherGerm ->
-					if (otherGerm != germ) {
-						val d = otherGerm.position - germ.position
-						val r = Math.max(d.absolute(), Conf.germRadius)
-						val m = Conf.feelGermScale / r / r
-						selfOffset(d * (m / r))
-					}
+					if (otherGerm == germ) return@forEach
+					val d = otherGerm.position - germ.position
+					val r = Math.max(d.absolute(), Conf.germRadius)
+					val m = Conf.feelGermScale / r / r - 0.05
+					if (m > 0) selfOffset(d * (m / r))
 				}
 			}.limitRound(Conf.feelGermMax)
 			val feelWall = mutableZeroPoint2D().apply {
@@ -170,36 +206,16 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		
 	}
 	@Synchronized fun trainActor() {
-		val availableTime = processedTime - Conf.hopeTime
-		val availableLogs = ArrayList<GermLog>(_germs.size)
-		_germs.forEach { germ->
-			val nowRealLoss = Conf.germRealLoss(germ)
-			
-			val iterator = germ.logs.iterator()
-			while (iterator.hasNext()) {
-				val log = iterator.next()
-				if (log.actTime < availableTime) {
-					//take the available logs
-					availableLogs.add(log)
-					iterator.remove()
-				} else {
-					//maintain other logs
-					log.realLoss = nowRealLoss
-				}
-			}
-			
-		}
+		val trainLogs = getPatchLogs()?:return
+		nerveCore.trainCritic(trainLogs)
+		nerveCore.trainActor(trainLogs.map { it.feel })
 		
-		//train nerveCore if there are available logs
-		if (availableLogs.isEmpty()) return
-		
-		nerveCore.trainCritic(availableLogs)
-		nerveCore.trainActor(availableLogs.map { it.feel })
-		
-		trainedCount += availableLogs.size
+		trainedCount += trainLogs.size
 		println("trained sample [$trainedCount]")
 	}
 	
+	
+	//logging
 	@Synchronized fun getAverageEnergy(): Double {
 		return _germs.sumByDouble { it.energy } / _germs.size
 	}

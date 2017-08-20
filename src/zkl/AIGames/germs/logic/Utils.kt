@@ -14,7 +14,6 @@ fun Point2D.limitRound(r: Double):Point2D {
 	}
 	return this
 }
-
 fun Point2D.limitRect(width: Double, height: Double): Point2D {
 	val re = mutableClone()
 	when{
@@ -29,11 +28,20 @@ fun Point2D.limitRect(width: Double, height: Double): Point2D {
 		y < 0.0 -> {
 			re.y = 0.0
 		}
-		y > width -> {
+		y > height -> {
 			re.y = height
 		}
 	}
 	return re
+}
+fun Point2D.isInRect(width: Double, height: Double): Boolean {
+	return when{
+		x < 0.0 -> false
+		x > width -> false
+		y < 0.0 -> false
+		y > height -> false
+		else -> true
+	}
 }
 
 private val random = Random()

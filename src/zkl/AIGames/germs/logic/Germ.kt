@@ -31,4 +31,4 @@ class Germ(val dish:Dish) {
 }
 
 data class GermFeel(var nutrient: Point2D, var germ: Point2D, var wall: Point2D, var energy: Double)
-data class GermLog(val actTime:Double,var feel: GermFeel, var actVelocity: Point2D, var realLoss: Double)
+data class GermLog(val actTime:Double, var feel: GermFeel, var act: Point2D, var realLoss: Double)
