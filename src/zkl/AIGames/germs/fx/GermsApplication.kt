@@ -52,7 +52,7 @@ class GermsApplication : Application() {
 					val clickPosition = pointOf(e.x,e.y)
 					repeat(10){
 						val position = clickPosition + randomPoint2D(30.0)
-						val amount = MT.random(Conf.nutrientRange.start, Conf.nutrientRange.endInclusive)
+						val amount = MT.random(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
 						dish.putNutrient(amount, position)
 					}
 				}

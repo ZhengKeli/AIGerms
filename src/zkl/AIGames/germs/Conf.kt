@@ -16,9 +16,9 @@ object Conf {
 	
 	val nutrientInterval = 1e3/5.0
 	val nutrientMaxCount = 30
-	val nutrientRange = 0.2..0.5
+	val nutrientAmountRange = 0.2..0.5
 	val nutrientMaxVelocity = 0.1
-	val nutrientDisturb = 1.0e-3
+	val nutrientDisturbForce = 1.0e-3
 	
 	val feelGermMax = 3.0
 	val feelGermScale = 0.5e4
@@ -40,9 +40,9 @@ object Conf {
 	val energyLogBufferSize = 1280
 	
 	val isTraining = true
-	val hopeTime = 200.0
-	val actInterval = hopeTime/20.0
-	val disturbRate = 0.05
+	val hopeTime = 100.0
+	val actInterval = hopeTime/10.0
+	val disturbForce = 0.04
 	
 	
 	//process & viewing

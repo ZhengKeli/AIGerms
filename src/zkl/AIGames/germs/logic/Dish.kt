@@ -33,7 +33,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		//nutrients move
 		_nutrients.forEach {
 			it.run {
-				velocity += randomPoint2D(Conf.nutrientDisturb)
+				velocity += randomPoint2D(Conf.nutrientDisturbForce)
 				position += velocity * time
 			}
 		}
@@ -84,7 +84,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 	@Synchronized fun putRandomNutrients(count:Int=1) {
 		repeat(count){
 			if (_nutrients.size < Conf.nutrientMaxCount) {
-				val amount = MT.random(Conf.nutrientRange.start, Conf.nutrientRange.endInclusive)
+				val amount = MT.random(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
 				val position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
 				putNutrient(amount, position)
 			}
@@ -182,10 +182,10 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		_germs.forEachIndexed { index, germ ->
 			
 			//apply act
-			val wantAct = actVelocities[index].limitRound(1.0)
+			germ.act = actVelocities[index].limitRound(1.0)
 			if (isTraining) {
-				germ.disturbAct += randomPoint2D(Conf.disturbRate)
-				germ.act =wantAct + germ.disturbAct
+				germ.disturbAct += randomPoint2D(Conf.disturbForce)
+				germ.act += germ.disturbAct
 			}
 			
 			//apply velocity
