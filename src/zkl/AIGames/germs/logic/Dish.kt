@@ -183,25 +183,16 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			
 			//apply act
 			val wantAct = actVelocities[index].limitRound(1.0)
-			val disturbMode = if(isTraining) Conf.disturbMode else Conf.DisturbMode.none
-			germ.act = when (disturbMode) {
-				Conf.DisturbMode.none -> wantAct
-				Conf.DisturbMode.assign ->
-					if (Math.random() > Conf.disturbRate) wantAct
-					else gaussianRandomPoint2D()
-				Conf.DisturbMode.offset ->
-					wantAct + gaussianRandomPoint2D(Conf.disturbRate)
-				Conf.DisturbMode.brown -> {
-					germ.disturbAct += randomPoint2D(Conf.disturbRate)
-					wantAct + germ.disturbAct
-				}
+			if (isTraining) {
+				germ.disturbAct += randomPoint2D(Conf.disturbRate)
+				germ.act =wantAct + germ.disturbAct
 			}
 			
 			//apply velocity
 			germ.velocity = germ.act * Conf.germMaxVelocity
 			
 			//add log if is training
-			if (Conf.isTraining) {
+			if (isTraining) {
 				val realLoss = Conf.germRealLoss(germ)
 				val germLog = GermLog(processedTime, germ.feel, germ.act, realLoss)
 				germ.logs.addLast(germLog)

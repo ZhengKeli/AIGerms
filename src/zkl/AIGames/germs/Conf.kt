@@ -37,22 +37,18 @@ object Conf {
 	
 	val logBufferSize = 1000
 	val trainPatchSize = germCount*2
+	val energyLogBufferSize = 1280
 	
 	val isTraining = true
-	enum class DisturbMode {none, assign, offset,brown }
-	val disturbMode = DisturbMode.brown
-	val disturbRate = 0.05
-	
 	val hopeTime = 200.0
 	val actInterval = hopeTime/20.0
-	
+	val disturbRate = 0.05
 	
 	
 	//process & viewing
 	val processCount = 50
 	val processUnit = 1.0
 	val frameInterval = 20L
-	val energyLogBufferSize = 1280
 	
 	
 }
