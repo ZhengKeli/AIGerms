@@ -14,8 +14,8 @@ object Conf {
 	
 	val germStarveToDeath = false
 	
-	val nutrientInterval = 30.0
-	val nutrientMaxCount = 25
+	val nutrientInterval = 1e3/5.0
+	val nutrientMaxCount = 30
 	val nutrientRange = 0.2..0.5
 	val nutrientMaxVelocity = 0.1
 	val nutrientDisturb = 1.0e-3
@@ -38,17 +38,18 @@ object Conf {
 	val logBufferSize = 1000
 	val trainPatchSize = germCount*2
 	
-	val isTraining = false
-	enum class DisturbMode {none, assign, offset }
-	val disturbMode = DisturbMode.assign
-	val disturbRate = 0.1
-	val hopeTime = 100.0
-	val actInterval = hopeTime/10.0
+	val isTraining = true
+	enum class DisturbMode {none, assign, offset,brown }
+	val disturbMode = DisturbMode.brown
+	val disturbRate = 0.05
+	
+	val hopeTime = 200.0
+	val actInterval = hopeTime/20.0
 	
 	
 	
 	//process & viewing
-	val processCount = 5
+	val processCount = 50
 	val processUnit = 1.0
 	val frameInterval = 20L
 	val energyLogBufferSize = 1280

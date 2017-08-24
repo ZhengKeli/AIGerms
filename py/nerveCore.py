@@ -3,8 +3,10 @@ import tensorflow as tf
 sess = None
 graph = None
 
+defaultGraphPath = "./graph"
 
-def initialize(path="./graph/aiGerms.meta", checkpoint="./graph"):
+
+def initialize(path=defaultGraphPath + "/aiGerms.meta", checkpoint=defaultGraphPath):
     global sess
     sess = tf.Session()
     saver = tf.train.import_meta_graph(path)

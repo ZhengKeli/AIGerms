@@ -135,6 +135,7 @@ class GermsApplication : Application() {
 			energyLogs.add(dish.getAverageEnergy())
 			if (energyLogs.size > Conf.energyLogBufferSize) {
 				println("average energy: ${energyLogs.average()}")
+				if (Conf.isTraining) println("trained sample [${dish.trainedCount}]")
 				energyLogs.clear()
 			}
 		}

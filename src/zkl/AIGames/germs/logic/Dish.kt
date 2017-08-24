@@ -76,7 +76,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 	
 	@Synchronized fun putGerm(count:Int=1) {
 		repeat(count){
-			val germ = Germ(this)
+			val germ = Germ()
 			germ.position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
 			_germs.add(germ)
 		}
@@ -99,10 +99,11 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 	
 	
 	//training
-	val nerveCore: NerveCore = TFNerveCore()
+	private val nerveCore: NerveCore = TFNerveCore()
 	var trainedCount = 0
+		private set
 	
-	val logBuffer = ArrayList<GermLog>(Conf.logBufferSize)
+	private val logBuffer = ArrayList<GermLog>(Conf.logBufferSize)
 	@Synchronized private fun addLog(germLog: GermLog) {
 		if (logBuffer.size < Conf.logBufferSize) {
 			logBuffer.add(germLog)
@@ -189,7 +190,11 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 					if (Math.random() > Conf.disturbRate) wantAct
 					else gaussianRandomPoint2D()
 				Conf.DisturbMode.offset ->
-					wantAct + gaussianRandomPoint2D(Conf.germMaxVelocity * Conf.disturbRate)
+					wantAct + gaussianRandomPoint2D(Conf.disturbRate)
+				Conf.DisturbMode.brown -> {
+					germ.disturbAct += randomPoint2D(Conf.disturbRate)
+					wantAct + germ.disturbAct
+				}
 			}
 			
 			//apply velocity
@@ -211,7 +216,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		nerveCore.trainActor(trainLogs.map { it.feel })
 		
 		trainedCount += trainLogs.size
-		println("trained sample [$trainedCount]")
+		
 	}
 	
 	

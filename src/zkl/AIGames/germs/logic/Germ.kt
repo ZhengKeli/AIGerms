@@ -6,27 +6,28 @@ import zkl.tools.math.Point2D
 import zkl.tools.math.zeroPoint2D
 import java.util.*
 
-class Germ(val dish:Dish) {
+class Germ {
 	
 	//live in dish
 	var position: Point2D = zeroPoint2D()
-		set(value) {
-			field = value.limitRect(dish.dishSize, dish.dishSize)
-		}
+		set(value) { field = value.limitRect(Conf.dishSize, Conf.dishSize) }
 	var velocity: Point2D = zeroPoint2D()
-		set(value) {
-			field = value.limitRound(Conf.germMaxVelocity)
-		}
+		set(value) { field = value.limitRound(Conf.germMaxVelocity) }
 	var energy: Double = 0.5
-		set(value) {
-			field = MT.valueLimit(value, 0.0, 1.0)
-		}
+		set(value) { field = MT.valueLimit(value, 0.0, 1.0) }
 	
 	
 	//think in nerve
 	var feel: GermFeel = GermFeel(zeroPoint2D(), zeroPoint2D(), zeroPoint2D(),0.0)
 	var act: Point2D = zeroPoint2D() // 0..1
+		set(value) { field = value.limitRound(1.0) }
 	val logs = LinkedList<GermLog>()
+	
+	
+	//disturb
+	var disturbAct: Point2D = zeroPoint2D()
+		set(value) { field = value.limitRound(1.0) }
+	
 	
 }
 
