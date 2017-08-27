@@ -29,7 +29,7 @@ object Conf {
 	
 	//training
 	val germEnergyCost = { germ: Germ ->
-		Math.pow(germ.velocity.absolute() / germMaxVelocity, 2.0) * 1.0e-4 + 1.0e-4
+		Math.pow(germ.velocity.absolute() / germMaxVelocity, 2.0) * 5.0e-4 + 1.0e-4
 	}
 	val germRealLoss = { germ:Germ ->
 		0.1 / (germ.energy + 0.1)
@@ -37,17 +37,17 @@ object Conf {
 	
 	val logBufferSize = 1000
 	val trainPatchSize = germCount*2
-	val energyLogBufferSize = 1280
+	val energyLogBufferSize = germCount*100
 	
 	val isTraining = false
 	val hopeTime = 100.0
 	val actInterval = hopeTime/5.0
-	val disturbRate = 0.8
+	val disturbRate = 0.1
 	val disturbForce = 0.4
 	
 	
 	//process & viewing
-	val processCount = 20
+	val processCount = 5
 	val processUnit = 1.0
 	val frameInterval = 20L
 	

@@ -80,7 +80,7 @@ def train_critic(
     )
 
 
-def assign_critic(val_rate_assign_critic=0.01):
+def assign_critic(val_rate_assign_critic=None):
     feed_dict = {}
     if val_rate_assign_critic is not None:
         feed_dict[graph.rate_assign_critic] = val_rate_assign_critic
