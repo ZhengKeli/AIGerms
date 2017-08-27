@@ -23,10 +23,11 @@ def initialize(path=defaultGraphPath + "/aiGerms.meta", checkpoint=defaultGraphP
     graph.real_loss = graph.get_tensor_by_name("real_loss:0")
     graph.loss_loss = graph.get_tensor_by_name("loss_loss:0")
 
-    graph.learning_rate_actor = graph.get_tensor_by_name("learning_rate_actor:0")
     graph.train_actor = graph.get_operation_by_name("train_actor")
-    graph.learning_rate_critic = graph.get_tensor_by_name("learning_rate_critic:0")
     graph.train_critic = graph.get_operation_by_name("train_critic")
+
+    graph.rate_assign_critic = graph.get_tensor_by_name("rate_assign_critic:0")
+    graph.assign_critic = graph.get_operation_by_name("assign_critic")
 
 
 def save():
@@ -79,6 +80,15 @@ def train_critic(
     )
 
 
+def assign_critic(val_rate_assign_critic=0.01):
+    feed_dict = {}
+    if val_rate_assign_critic is not None:
+        feed_dict[graph.rate_assign_critic] = val_rate_assign_critic
+    return sess.run(
+        fetches=graph.assign_critic,
+        feed_dict=feed_dict)
+
+
 def train_actor(val_feel, val_learning_rate=None):
     feed_dict = {
         graph.feel: val_feel,
@@ -90,4 +100,3 @@ def train_actor(val_feel, val_learning_rate=None):
         fetches=[graph.train_actor, graph.ass_loss],
         feed_dict=feed_dict
     )
-

@@ -34,6 +34,7 @@ while True:
     # train
     (result_train_critic, _, val_loss_loss) = \
         nerveCore.train_critic(val_feel, val_act, val_real_loss)
+    nerveCore.assign_critic()
     (result_train_actor, val_ass_loss) = nerveCore.train_actor(val_feel)
 
     if train_id % train_group_size == 0:

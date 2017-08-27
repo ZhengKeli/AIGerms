@@ -103,6 +103,7 @@ def train_critic():
     val_act = val_log[:, 7:9]
     val_real_loss = val_log[:, 9]
     nerveCore.train_critic(val_feel, val_act, val_real_loss)
+    nerveCore.assign_critic()
 
     write_int(STU_SUCCEED)
     flush_stdout()

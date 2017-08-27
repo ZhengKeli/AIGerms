@@ -39,14 +39,15 @@ object Conf {
 	val trainPatchSize = germCount*2
 	val energyLogBufferSize = 1280
 	
-	val isTraining = true
+	val isTraining = false
 	val hopeTime = 100.0
-	val actInterval = hopeTime/10.0
-	val disturbForce = 0.04
+	val actInterval = hopeTime/5.0
+	val disturbRate = 0.8
+	val disturbForce = 0.4
 	
 	
 	//process & viewing
-	val processCount = 50
+	val processCount = 20
 	val processUnit = 1.0
 	val frameInterval = 20L
 	

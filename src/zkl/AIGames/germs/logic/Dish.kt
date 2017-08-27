@@ -185,7 +185,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			germ.act = actVelocities[index].limitRound(1.0)
 			if (isTraining) {
 				germ.disturbAct += randomPoint2D(Conf.disturbForce)
-				germ.act += germ.disturbAct
+				germ.act = germ.act * (1.0 - Conf.disturbRate) + germ.disturbAct * Conf.disturbRate
 			}
 			
 			//apply velocity
