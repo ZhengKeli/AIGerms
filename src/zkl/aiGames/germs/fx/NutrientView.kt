@@ -1,8 +1,8 @@
-package zkl.AIGames.germs.fx
+package zkl.aiGames.germs.fx
 
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
-import zkl.AIGames.germs.logic.Nutrient
+import zkl.aiGames.germs.logic.Nutrient
 
 class NutrientView(centerX: Double = 0.0, centerY: Double = 0.0, radius: Double = 5.0)
 	: Circle(centerX, centerY, radius, Color.BLUE) {

@@ -1,7 +1,7 @@
-package zkl.AIGames.germs.fx
+package zkl.aiGames.germs.fx
 
-import zkl.AIGames.germs.logic.GermFeel
-import zkl.AIGames.germs.nerveCore.TFNerveCore
+import zkl.aiGames.germs.logic.GermFeel
+import zkl.aiGames.germs.nerveCore.TFNerveCore
 import zkl.tools.math.pointOf
 
 fun main(args: Array<String>) {

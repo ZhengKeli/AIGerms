@@ -1,11 +1,11 @@
-package zkl.AIGames.germs.fx
+package zkl.aiGames.germs.fx
 
 import javafx.scene.Parent
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
-import zkl.AIGames.germs.Conf
-import zkl.AIGames.germs.logic.Germ
+import zkl.aiGames.germs.Conf
+import zkl.aiGames.germs.logic.Germ
 
 class GermView : Parent() {
 	

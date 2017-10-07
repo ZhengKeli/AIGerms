@@ -1,4 +1,4 @@
-package zkl.AIGames.germs.fx
+package zkl.aiGames.germs.fx
 
 import javafx.application.Application
 import javafx.application.Platform
@@ -9,9 +9,9 @@ import javafx.scene.layout.BackgroundFill
 import javafx.scene.layout.Pane
 import javafx.scene.paint.Color
 import javafx.stage.Stage
-import zkl.AIGames.germs.Conf
-import zkl.AIGames.germs.logic.Dish
-import zkl.AIGames.germs.logic.randomPoint2D
+import zkl.aiGames.germs.Conf
+import zkl.aiGames.germs.logic.Dish
+import zkl.aiGames.germs.logic.randomPoint2D
 import zkl.tools.math.MT
 import zkl.tools.math.pointOf
 import kotlin.concurrent.thread

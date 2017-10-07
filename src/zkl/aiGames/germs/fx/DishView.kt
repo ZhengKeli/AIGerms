@@ -1,7 +1,7 @@
-package zkl.AIGames.germs.fx
+package zkl.aiGames.germs.fx
 
 import javafx.scene.Parent
-import zkl.AIGames.germs.logic.Dish
+import zkl.aiGames.germs.logic.Dish
 
 
 class DishView:Parent() {

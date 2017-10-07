@@ -1,4 +1,4 @@
-package zkl.AIGames.germs.logic
+package zkl.aiGames.germs.logic
 
 import zkl.tools.math.MT
 import zkl.tools.math.Point2D

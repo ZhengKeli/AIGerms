@@ -1,8 +1,8 @@
-package zkl.AIGames.germs.logic
+package zkl.aiGames.germs.logic
 
-import zkl.AIGames.germs.Conf
-import zkl.AIGames.germs.nerveCore.NerveCore
-import zkl.AIGames.germs.nerveCore.TFNerveCore
+import zkl.aiGames.germs.Conf
+import zkl.aiGames.germs.nerveCore.NerveCore
+import zkl.aiGames.germs.nerveCore.TFNerveCore
 import zkl.tools.math.MT
 import zkl.tools.math.Point2D
 import zkl.tools.math.mutableZeroPoint2D
