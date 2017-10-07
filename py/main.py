@@ -3,7 +3,7 @@ import sys
 
 import numpy as np
 
-import nerveCore
+from TFNerveCore import TFNerveCore
 
 # stdio
 rawStdin = sys.stdin.buffer.raw
@@ -72,10 +72,16 @@ COM_TRAIN_ACTOR = 4
 STU_SUCCEED = 0
 STU_FAILED = 1
 
+# nerveCore
+defaultGraphPath = "./graph"
+defaultGraphName = "aiGerms"
+nerveCore = None
+
 
 # actions
 def initialize():
-    nerveCore.initialize()
+    global nerveCore
+    nerveCore = TFNerveCore(defaultGraphPath, defaultGraphName)
     write_int(STU_SUCCEED)
     flush_stdout()
     stderr.flush()
@@ -83,7 +89,11 @@ def initialize():
 
 def finalize():
     save = (read_int() == 0)
-    nerveCore.finalize(save)
+
+    if save:
+        nerveCore.save_graph(defaultGraphPath, defaultGraphName)
+    nerveCore.sess.close()
+
     write_int(STU_SUCCEED)
     flush_stdout()
 
@@ -102,8 +112,7 @@ def train_critic():
     val_feel = val_log[:, 0:7]
     val_act = val_log[:, 7:9]
     val_real_loss = val_log[:, 9]
-    nerveCore.train_critic(val_feel, val_act, val_real_loss)
-    nerveCore.assign_critic()
+    nerveCore.run_train_critic(val_feel, val_act, val_real_loss)
 
     write_int(STU_SUCCEED)
     flush_stdout()
@@ -111,7 +120,7 @@ def train_critic():
 
 def train_actor():
     val_feel = np.array(read_list(read_feel))
-    nerveCore.train_actor(val_feel)
+    nerveCore.run_train_actor(val_feel)
 
     write_int(STU_SUCCEED)
     flush_stdout()

@@ -1,6 +1,6 @@
-package zkl.AIGames.germs
+package zkl.aiGames.germs
 
-import zkl.AIGames.germs.logic.Germ
+import zkl.aiGames.germs.logic.Germ
 
 
 object Conf {
@@ -35,14 +35,14 @@ object Conf {
 		0.1 / (germ.energy + 0.1)
 	}
 	
-	val logBufferSize = 1000
-	val trainPatchSize = germCount*2
-	val energyLogBufferSize = germCount*100
+	val logBufferSize = germCount*20
+	val trainPatchSize = germCount
+	val energyLogBufferSize = 1280
 	
-	val isTraining = false
+	val isTraining = true
 	val hopeTime = 100.0
 	val actInterval = hopeTime/5.0
-	val disturbRate = 0.1
+	val disturbRate = 0.2
 	val disturbForce = 0.4
 	
 	
