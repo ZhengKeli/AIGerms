@@ -82,7 +82,7 @@ class TFNerveCore:
                 self.feel: val_feel,
                 self.act: val_act,
                 self.real_loss: val_real_loss,
-                self.critic_keep: 0.8
+                self.critic_keep: 0.5
             }
         )
 
