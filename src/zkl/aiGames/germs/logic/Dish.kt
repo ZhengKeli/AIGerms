@@ -75,9 +75,10 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 	}
 	
 	@Synchronized fun putGerm(count:Int=1) {
-		repeat(count){
+		repeat(count){ id->
 			val germ = Germ()
 			germ.position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
+			germ.disturbRate = Conf.disturbRate.run { start+(endInclusive-start)*id/(count-1) }
 			_germs.add(germ)
 		}
 	}
@@ -185,7 +186,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			germ.act = actVelocities[index].limitRound(1.0)
 			if (isTraining) {
 				germ.disturbAct += randomPoint2D(Conf.disturbForce)
-				germ.act = germ.act * (1.0 - Conf.disturbRate) + germ.disturbAct * Conf.disturbRate
+				germ.act = germ.act * (1.0 - germ.disturbRate) + germ.disturbAct * germ.disturbRate
 			}
 			
 			//apply velocity

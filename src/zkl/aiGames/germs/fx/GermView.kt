@@ -10,6 +10,7 @@ import zkl.aiGames.germs.logic.Germ
 class GermView : Parent() {
 	
 	val circle_body = Circle()
+	val circle_brain = Circle()
 	val line_actVelocity = Line()
 	val line_feelNutrient = Line()
 	val line_feelGerm = Line()
@@ -18,6 +19,10 @@ class GermView : Parent() {
 		circle_body.run {
 			fill = Color.WHITE
 			radius = Conf.germRadius
+		}
+		circle_brain.run {
+			fill = Color.RED
+			radius = Conf.germRadius/3.0
 		}
 		line_actVelocity.run {
 			strokeWidth = 3.0
@@ -32,7 +37,7 @@ class GermView : Parent() {
 			stroke = Color.WHITE
 		}
 		
-		this.children.addAll(circle_body,line_feelNutrient,line_feelGerm, line_actVelocity)
+		this.children.addAll(circle_body,circle_brain,line_feelNutrient,line_feelGerm, line_actVelocity)
 		
 	}
 	
@@ -43,6 +48,12 @@ class GermView : Parent() {
 			centerY = germ.position.y
 			val colorRate = germ.energy * 0.9 + 0.1
 			fill = Color(1.0, 1.0, 1.0, colorRate)
+		}
+		circle_brain.run {
+			centerX = germ.position.x
+			centerY = germ.position.y
+			val colorRate = 1.0 - germ.disturbRate
+			fill = Color(1.0, 0.0, 0.0, colorRate)
 		}
 		line_actVelocity.run{
 			startX = germ.position.x

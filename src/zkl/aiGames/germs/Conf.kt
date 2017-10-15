@@ -40,14 +40,14 @@ object Conf {
 	val energyLogBufferSize = 1280
 	
 	val isTraining = true
-	val hopeTime = 100.0
+	val hopeTime = 200.0
 	val actInterval = hopeTime/5.0
-	val disturbRate = 0.9
+	val disturbRate = 0.3..1.0
 	val disturbForce = 0.4
 	
 	
 	//process & viewing
-	val processCount = 5
+	val processCount = 100
 	val processUnit = 1.0
 	val frameInterval = 20L
 	

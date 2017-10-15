@@ -1,16 +1,37 @@
 package zkl.aiGames.germs.logic
 
 import zkl.aiGames.germs.Conf
-import zkl.tools.math.MT
-import zkl.tools.math.Point2D
-import zkl.tools.math.zeroPoint2D
+import zkl.tools.math.*
 import java.util.*
 
 class Germ {
 	
 	//live in dish
 	var position: Point2D = zeroPoint2D()
-		set(value) { field = value.limitRect(Conf.dishSize, Conf.dishSize) }
+		set(value) {
+			val re = value.mutableClone()
+			when {
+				value.x < 0.0 -> {
+					re.x = 0.0
+					disturbAct = pointOf(-disturbAct.x, disturbAct.y)
+				}
+				value.x > Conf.dishSize -> {
+					re.x = Conf.dishSize
+					disturbAct = pointOf(-disturbAct.x, disturbAct.y)
+				}
+			}
+			when {
+				value.y < 0.0 -> {
+					re.y = 0.0
+					disturbAct = pointOf(disturbAct.x, -disturbAct.y)
+				}
+				value.y > Conf.dishSize -> {
+					re.y = Conf.dishSize
+					disturbAct = pointOf(disturbAct.x, -disturbAct.y)
+				}
+			}
+			field = re
+		}
 	var velocity: Point2D = zeroPoint2D()
 		set(value) { field = value.limitRound(Conf.germMaxVelocity) }
 	var energy: Double = 0.5
@@ -25,6 +46,7 @@ class Germ {
 	
 	
 	//disturb
+	var disturbRate:Double = 0.0
 	var disturbAct: Point2D = zeroPoint2D()
 		set(value) { field = value.limitRound(1.0) }
 	
