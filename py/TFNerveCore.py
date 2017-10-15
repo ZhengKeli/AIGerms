@@ -36,20 +36,20 @@ class TFNerveCore:
 
         # critic network
         log = tf.concat([feel, act], 1)  # [-1,9]
-        critic_keep = tf.Variable(1.0,name="critic_keep")
-        critic_network = FullConnectedNetwork(log, [9, 30, 30, 30, 1], critic_keep)
-        ass_loss = tf.multiply(tf.reduce_sum(critic_network.outputs, -1), 1.0, "ass_loss")  # [-1]
+        critic_keep = tf.Variable(1.0, name="critic_keep")
+        critic_network = FullConnectedNetwork(log, [9, 30, 30, 30, 30, 1], critic_keep)
+        ass_loss = tf.multiply(tf.reduce_sum(critic_network.outputs, -1), 1.2, "ass_loss")  # [-1]
 
         # train
         real_loss = tf.placeholder(tf.float32, name="real_loss")  # [-1]
         loss_loss = tf.square(ass_loss - real_loss, name="loss_loss")  # [-1]
 
         vars_actor = [actor_network.weights, actor_network.bias]
-        train_actor = tf.train.AdamOptimizer(0.01) \
+        train_actor = tf.train.AdamOptimizer(1e-2) \
             .minimize(tf.reduce_sum(ass_loss), var_list=vars_actor, name="train_actor")
 
         vars_critic = [critic_network.weights, critic_network.bias]
-        train_critic = tf.train.AdamOptimizer(0.01) \
+        train_critic = tf.train.AdamOptimizer(1e-2) \
             .minimize(tf.reduce_sum(loss_loss), var_list=vars_critic, name="train_critic")
 
         self.sess.run(tf.global_variables_initializer())
@@ -82,7 +82,7 @@ class TFNerveCore:
                 self.feel: val_feel,
                 self.act: val_act,
                 self.real_loss: val_real_loss,
-                self.critic_keep: 0.5
+                self.critic_keep: 0.9
             }
         )
 

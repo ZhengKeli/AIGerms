@@ -1,6 +1,8 @@
 package zkl.aiGames.germs.logic
 
 import zkl.aiGames.germs.Conf
+import zkl.aiGames.germs.nerveCore.GermFeel
+import zkl.aiGames.germs.nerveCore.GermLog
 import zkl.aiGames.germs.nerveCore.NerveCore
 import zkl.aiGames.germs.nerveCore.TFNerveCore
 import zkl.tools.math.MT
@@ -78,7 +80,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		repeat(count){ id->
 			val germ = Germ()
 			germ.position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
-			germ.disturbRate = Conf.disturbRate.run { start+(endInclusive-start)*id/(count-1) }
+			germ.disturbRate = Conf.disturbRate.run { start+(endInclusive-start)/count*id }
 			_germs.add(germ)
 		}
 	}
@@ -113,28 +115,26 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			logBuffer[randomIndex] = germLog
 		}
 	}
+	
 	@Synchronized private fun getRandomLog(): GermLog {
 		val randomIndex = (Math.random() * logBuffer.size).toInt()
 		return logBuffer[randomIndex]
 	}
-	@Synchronized private fun getPatchLogs(patchSize: Int = Conf.trainPatchSize):List<GermLog>?{
-		if(logBuffer.size< patchSize*10) return null
-		return Array(patchSize){ getRandomLog() }.asList()
+	@Synchronized private fun getPatchLogs(patchSize: Int = Conf.trainPatchSize): List<GermLog>? {
+		if (logBuffer.size < patchSize * 10) return null
+		return Array(patchSize) { getRandomLog() }.asList()
 	}
 	@Synchronized fun maintainLogs(){
 		val availableTime = processedTime - Conf.hopeTime
 		_germs.forEach { germ->
-			val nowRealLoss = Conf.germRealLoss(germ)
 			val iterator = germ.logs.iterator()
 			while (iterator.hasNext()) {
 				val log = iterator.next()
 				if (log.actTime < availableTime) {
 					//take the available logs
-					logBuffer.add(log)
+					log.realLoss = Conf.germRealLoss(germ)
+					addLog(log)
 					iterator.remove()
-				} else {
-					//maintain other logs
-					log.realLoss = nowRealLoss
 				}
 			}
 		}
@@ -194,8 +194,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			
 			//add log if is training
 			if (isTraining) {
-				val realLoss = Conf.germRealLoss(germ)
-				val germLog = GermLog(processedTime, germ.feel, germ.act, realLoss)
+				val germLog = GermLog(processedTime, germ.feel, germ.act, 0.0)
 				germ.logs.addLast(germLog)
 			}
 			
@@ -206,9 +205,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		val trainLogs = getPatchLogs()?:return
 		nerveCore.trainCritic(trainLogs)
 		nerveCore.trainActor(trainLogs.map { it.feel })
-		
 		trainedCount += trainLogs.size
-		
 	}
 	
 	

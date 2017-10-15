@@ -8,13 +8,13 @@ object Conf {
 	//basic
 	val dishSize = 500.0
 	
-	val germCount = 5
+	val germCount = 8
 	val germRadius = 20.0
 	val germMaxVelocity = 1.0
 	
 	val germStarveToDeath = false
 	
-	val nutrientInterval = 1e3/5.0
+	val nutrientInterval = 1e3/10.0
 	val nutrientMaxCount = 30
 	val nutrientAmountRange = 0.2..0.5
 	val nutrientMaxVelocity = 0.1
@@ -41,8 +41,8 @@ object Conf {
 	
 	val isTraining = true
 	val hopeTime = 200.0
-	val actInterval = hopeTime/5.0
-	val disturbRate = 0.3..1.0
+	val actInterval = hopeTime/10.0
+	val disturbRate = 0.4..0.5
 	val disturbForce = 0.4
 	
 	

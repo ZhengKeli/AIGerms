@@ -1,7 +1,5 @@
 package zkl.aiGames.germs.nerveCore
 
-import zkl.aiGames.germs.logic.GermFeel
-import zkl.aiGames.germs.logic.GermLog
 import zkl.tools.math.Point2D
 import zkl.tools.math.pointOf
 import java.io.DataInputStream
