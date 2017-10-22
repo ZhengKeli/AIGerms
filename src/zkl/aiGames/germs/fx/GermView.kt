@@ -58,7 +58,7 @@ class GermView : Parent() {
 		line_actVelocity.run{
 			startX = germ.position.x
 			startY = germ.position.y
-			val endPosition = germ.position + germ.act *20.0
+			val endPosition = germ.position + germ.act.velocity * 20.0
 			endX = endPosition.x
 			endY = endPosition.y
 		}

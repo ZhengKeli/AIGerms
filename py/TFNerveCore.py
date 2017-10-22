@@ -30,15 +30,15 @@ class TFNerveCore:
     def create_graph(self):
         # actor network
         feel = tf.placeholder(tf.float32, name="feel")  # [-1,7]
-        actor_keep = tf.Variable(1.0,name="actor_keep")
-        actor_network = FullConnectedNetwork(feel, [7, 20, 20, 2], actor_keep)
+        actor_keep = tf.Variable(1.0, name="actor_keep")
+        actor_network = FullConnectedNetwork(feel, [7, 64, 64, 64, 2], actor_keep)
         act = tf.multiply(actor_network.outputs, 1.0, "act")  # [-1,2]
 
         # critic network
         log = tf.concat([feel, act], 1)  # [-1,9]
         critic_keep = tf.Variable(1.0, name="critic_keep")
         critic_network = FullConnectedNetwork(log, [9, 30, 30, 30, 30, 1], critic_keep)
-        ass_loss = tf.multiply(tf.reduce_sum(critic_network.outputs, -1), 1.2, "ass_loss")  # [-1]
+        ass_loss = tf.multiply(tf.reduce_sum(critic_network.outputs, -1), 1.0, "ass_loss")  # [-1]
 
         # train
         real_loss = tf.placeholder(tf.float32, name="real_loss")  # [-1]

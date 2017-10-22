@@ -106,24 +106,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 	var trainedCount = 0
 		private set
 	
-	private val logBuffer = ArrayList<GermLog>(Conf.logBufferSize)
-	@Synchronized private fun addLog(germLog: GermLog) {
-		if (logBuffer.size < Conf.logBufferSize) {
-			logBuffer.add(germLog)
-		}else{
-			val randomIndex = (Math.random() * logBuffer.size).toInt()
-			logBuffer[randomIndex] = germLog
-		}
-	}
-	
-	@Synchronized private fun getRandomLog(): GermLog {
-		val randomIndex = (Math.random() * logBuffer.size).toInt()
-		return logBuffer[randomIndex]
-	}
-	@Synchronized private fun getPatchLogs(patchSize: Int = Conf.trainPatchSize): List<GermLog>? {
-		if (logBuffer.size < patchSize * 10) return null
-		return Array(patchSize) { getRandomLog() }.asList()
-	}
+	private val logBuffer = ArrayList<GermLog>()
 	@Synchronized fun maintainLogs(){
 		val availableTime = processedTime - Conf.hopeTime
 		_germs.forEach { germ->
@@ -133,7 +116,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 				if (log.actTime < availableTime) {
 					//take the available logs
 					log.realLoss = Conf.germRealLoss(germ)
-					addLog(log)
+					logBuffer.add(log)
 					iterator.remove()
 				}
 			}
@@ -163,9 +146,9 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			}.limitRound(Conf.feelGermMax)
 			val feelWall = mutableZeroPoint2D().apply {
 				val dx1 = germ.position.x + 50.0
-				val dx2 = dishSize - germ.position.x+ 50.0
-				val dy1 = germ.position.y+ 50.0
-				val dy2 = dishSize - germ.position.y+ 50.0
+				val dx2 = dishSize - germ.position.x + 50.0
+				val dy1 = germ.position.y + 50.0
+				val dy2 = dishSize - germ.position.y + 50.0
 				val const = Conf.feelWallScale
 				selfOffset(
 					x = -const / (dx1 * dx1) + const / (dx2 * dx2),
@@ -177,20 +160,20 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		}
 		
 		//run nerveCore
-		val actVelocities = nerveCore.runActor(feels)
+		val germActs = nerveCore.runActor(feels)
 		
 		//apply result
 		_germs.forEachIndexed { index, germ ->
 			
 			//apply act
-			germ.act = actVelocities[index].limitRound(1.0)
+			germ.act = germActs[index]
 			if (isTraining) {
 				germ.disturbAct += randomPoint2D(Conf.disturbForce)
-				germ.act = germ.act * (1.0 - germ.disturbRate) + germ.disturbAct * germ.disturbRate
+				germ.act.velocity = germ.act.velocity * (1.0 - germ.disturbRate) + germ.disturbAct * germ.disturbRate
 			}
 			
 			//apply velocity
-			germ.velocity = germ.act * Conf.germMaxVelocity
+			germ.velocity = germ.act.velocity
 			
 			//add log if is training
 			if (isTraining) {
@@ -202,10 +185,11 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		
 	}
 	@Synchronized fun trainActor() {
-		val trainLogs = getPatchLogs()?:return
-		nerveCore.trainCritic(trainLogs)
-		nerveCore.trainActor(trainLogs.map { it.feel })
-		trainedCount += trainLogs.size
+		if(logBuffer.size==0) return
+		nerveCore.trainCritic(logBuffer)
+		nerveCore.trainActor(logBuffer.map { it.feel })
+		trainedCount += logBuffer.size
+		logBuffer.clear()
 	}
 	
 	

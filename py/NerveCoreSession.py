@@ -65,7 +65,7 @@ class NerveCoreSession:
         val_act = self.nerveCore.run_actor(val_feel)
 
         self.io.write_int(STU_SUCCEED)
-        self.io.write_list(val_act, self.io.write_point2d)
+        self.io.write_list(val_act, self.io.write_act)
         self.io.flush_out()
 
     def train_critic(self):
@@ -126,7 +126,7 @@ class NerveCoreIOWrapper:
         for item in objects:
             encoder(item)
 
-    def write_point2d(self, value):
+    def write_act(self, value):
         self.out_stream.write(struct.pack("!2f", *value))
 
     def flush_out(self):

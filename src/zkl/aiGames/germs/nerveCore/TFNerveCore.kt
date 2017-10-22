@@ -54,7 +54,7 @@ class TFNerveCore : NerveCore {
 		process.waitFor()
 	}
 	
-	override fun runActor(feels:List<GermFeel>):List<Point2D>{
+	override fun runActor(feels:List<GermFeel>):List<GermAct>{
 		dataOutput.writeInt(COM_RUN_ACTOR)
 		dataOutput.writeList(feels,DataOutputStream::writeGermFeel)
 		dataOutput.flush()
@@ -62,7 +62,7 @@ class TFNerveCore : NerveCore {
 		val status = dataInput.readInt()
 		if (status != STU_SUCCEED) throw OperationFailedException("runActor", status)
 		
-		return dataInput.readList(DataInputStream::readPoint2D)
+		return dataInput.readList(DataInputStream::readGermAct)
 	}
 	
 	override fun trainCritic(germLog:List<GermLog>) {
@@ -101,12 +101,15 @@ fun DataOutputStream.writeGermFeel(germFeel: GermFeel) {
 	writePoint2D(germFeel.nutrient)
 	writePoint2D(germFeel.germ)
 	writePoint2D(germFeel.wall)
-	writeFloat(germFeel.energy.toFloat())
+	writeFloat((-1.0 + germFeel.energy * 2.0).toFloat())
+}
+fun DataOutputStream.writeGermAct(germAct: GermAct) {
+	writePoint2D(germAct.velocity)
 }
 fun DataOutputStream.writeGermLog(germLog: GermLog) {
 	writeGermFeel(germLog.feel)
-	writePoint2D(germLog.act)
-	writeFloat(germLog.realLoss.toFloat())
+	writeGermAct(germLog.act)
+	writeFloat((-1.0 + germLog.realLoss * 2.0).toFloat())
 }
 
 fun <T> DataInputStream.readList(decoder:DataInputStream.()->T): List<T> {
@@ -119,4 +122,7 @@ fun <T> DataInputStream.readList(decoder:DataInputStream.()->T): List<T> {
 }
 fun DataInputStream.readPoint2D(): Point2D {
 	return pointOf(readFloat().toDouble(), readFloat().toDouble())
+}
+fun DataInputStream.readGermAct():GermAct{
+	return GermAct(readPoint2D())
 }
