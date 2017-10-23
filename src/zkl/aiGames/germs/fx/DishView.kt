@@ -1,10 +1,16 @@
 package zkl.aiGames.germs.fx
 
 import javafx.scene.Parent
+import zkl.aiGames.germs.Conf
 import zkl.aiGames.germs.logic.Dish
 
 
 class DishView:Parent() {
+	
+	init {
+		this.layoutX = Conf.viewPadding
+		this.layoutY = Conf.viewPadding
+	}
 	
 	val germViewBuffers = ArrayList<GermView>()
 	val nutrientViewBuffers = ArrayList<NutrientView>()

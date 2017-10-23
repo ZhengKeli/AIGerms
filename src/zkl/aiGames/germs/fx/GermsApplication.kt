@@ -31,7 +31,7 @@ class GermsApplication : Application() {
 		initStage()
 	}
 	private fun initStage() {
-		stage.scene = Scene(initDishView(), Conf.dishSize, Conf.dishSize)
+		stage.scene = Scene(initDishView(), Conf.stageSize, Conf.stageSize)
 		stage.title = "germs"
 		stage.isIconified = false
 		stage.setOnHidden {
@@ -47,7 +47,7 @@ class GermsApplication : Application() {
 		rootNote.setOnMouseClicked {
 			initLogic()
 			startProcess()
-			rootNote.setOnMouseClicked { e->
+			dishView.setOnMouseClicked { e->
 				synchronized(dish) {
 					val clickPosition = pointOf(e.x,e.y)
 					repeat(10){
