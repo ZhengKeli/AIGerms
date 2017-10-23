@@ -31,20 +31,21 @@ class TFNerveCore:
         # actor network
         feel = tf.placeholder(tf.float32, name="feel")  # [-1,7]
         actor_keep = tf.Variable(1.0, name="actor_keep")
-        actor_network = FullConnectedNetwork(feel, [7, 64, 64, 64, 2], actor_keep)
-        act = tf.multiply(actor_network.outputs, 1.0, "act")  # [-1,2]
+        feel_network = FullConnectedNetwork(feel, [7, 64, 64, 64, 16], actor_keep)
+        act_network = FullConnectedNetwork(feel_network.outputs, [16, 16, 2], actor_keep)
+        act = tf.multiply(act_network.outputs, 1.0, "act")  # [-1,2]
 
         # critic network
-        log = tf.concat([feel, act], 1)  # [-1,9]
         critic_keep = tf.Variable(1.0, name="critic_keep")
-        critic_network = FullConnectedNetwork(log, [9, 30, 30, 30, 30, 1], critic_keep)
+        critic_in = tf.concat([feel_network.outputs, act], 1)  # [-1,18]
+        critic_network = FullConnectedNetwork(critic_in, [18, 64, 64, 64, 1], critic_keep)
         ass_loss = tf.multiply(tf.reduce_sum(critic_network.outputs, -1), 1.0, "ass_loss")  # [-1]
 
         # train
         real_loss = tf.placeholder(tf.float32, name="real_loss")  # [-1]
         loss_loss = tf.square(ass_loss - real_loss, name="loss_loss")  # [-1]
 
-        vars_actor = [actor_network.weights, actor_network.bias]
+        vars_actor = [feel_network.weights, feel_network.bias]
         train_actor = tf.train.AdamOptimizer(1e-2) \
             .minimize(tf.reduce_sum(ass_loss), var_list=vars_actor, name="train_actor")
 
