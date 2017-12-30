@@ -47,9 +47,9 @@ class GermsApplication : Application() {
 		rootNote.setOnMouseClicked {
 			initLogic()
 			startProcess()
-			dishView.setOnMouseClicked { e->
+			rootNote.setOnMouseClicked { e->
 				synchronized(dish) {
-					val clickPosition = pointOf(e.x,e.y)
+					val clickPosition = pointOf(e.x - Conf.viewPadding, e.y - Conf.viewPadding)
 					repeat(10){
 						val position = clickPosition + randomPoint2D(30.0)
 						val amount = MT.random(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
@@ -118,15 +118,17 @@ class GermsApplication : Application() {
 	}
 	private fun processLogic(){
 		repeat(Conf.processCount){
-			dish.process()
-			if (dish.processedTime - lastTimePutNutrient > Conf.nutrientInterval) {
+			if (dish.processedTime - lastTimePutNutrient >= Conf.nutrientInterval) {
 				dish.putRandomNutrients()
 				lastTimePutNutrient = dish.processedTime
 			}
-			if (dish.processedTime - lastTimeRunActor > Conf.actInterval) {
+			if (dish.processedTime - lastTimeRunActor >= Conf.actInterval) {
 				dish.runActor(Conf.isTraining)
 				lastTimeRunActor = dish.processedTime
 			}
+			
+			dish.process()
+			
 			if (Conf.isTraining) {
 				dish.maintainLogs()
 				dish.trainActor()

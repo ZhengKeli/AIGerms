@@ -101,7 +101,6 @@ fun DataOutputStream.writeGermFeel(germFeel: GermFeel) {
 	writePoint2D(germFeel.nutrient)
 	writePoint2D(germFeel.germ)
 	writePoint2D(germFeel.wall)
-	writeFloat((-1.0 + germFeel.energy * 2.0).toFloat())
 }
 fun DataOutputStream.writeGermAct(germAct: GermAct) {
 	writePoint2D(germAct.velocity)

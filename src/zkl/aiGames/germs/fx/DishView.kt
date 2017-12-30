@@ -5,7 +5,7 @@ import zkl.aiGames.germs.Conf
 import zkl.aiGames.germs.logic.Dish
 
 
-class DishView:Parent() {
+class DishView: Parent() {
 	
 	init {
 		this.layoutX = Conf.viewPadding

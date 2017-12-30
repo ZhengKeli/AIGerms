@@ -4,7 +4,10 @@ import zkl.aiGames.germs.Conf
 import zkl.aiGames.germs.nerveCore.GermAct
 import zkl.aiGames.germs.nerveCore.GermFeel
 import zkl.aiGames.germs.nerveCore.GermLog
-import zkl.tools.math.*
+import zkl.tools.math.Point2D
+import zkl.tools.math.mutableClone
+import zkl.tools.math.pointOf
+import zkl.tools.math.zeroPoint2D
 import java.util.*
 
 class Germ {
@@ -37,12 +40,11 @@ class Germ {
 		}
 	var velocity: Point2D = zeroPoint2D()
 		set(value) { field = value.limitRound(1.0) }
-	var energy: Double = 0.5
-		set(value) { field = MT.valueLimit(value, 0.0, 1.0) }
+	var energy: Double = 0.0
 	
 	
 	//think in nerve
-	var feel: GermFeel = GermFeel(zeroPoint2D(), zeroPoint2D(), zeroPoint2D(), 0.0)
+	var feel: GermFeel = GermFeel(zeroPoint2D(), zeroPoint2D(), zeroPoint2D())
 	var act: GermAct = GermAct(zeroPoint2D())
 	val logs = LinkedList<GermLog>()
 	

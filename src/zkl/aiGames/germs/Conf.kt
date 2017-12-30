@@ -6,44 +6,44 @@ import zkl.aiGames.germs.logic.Germ
 object Conf {
 	
 	//basic
-	val dishSize = 600.0
+	val dishSize = 100.0
 	
-	val germCount = 10
+	val germCount = 1
 	val germRadius = 20.0
 	
-	val germStarveToDeath = false
-	
-	val nutrientInterval = 1e3/12.0
-	val nutrientMaxCount = 30
-	val nutrientAmountRange = 0.2..0.5
+	val nutrientInterval = 1e3/1.0
+	val nutrientMaxCount = 1
+	val nutrientAmountRange = 0.5..0.5
 	val nutrientMaxVelocity = 0.1
-	val nutrientDisturbForce = 0.0e-3
+	val nutrientDisturbForce = 1e-4
 	
 	val feelGermMax = 3.0
 	val feelGermScale = 0.5e4
 	val feelNutrientMax = 3.0
-	val feelNutrientScale = 1e4
+	val feelNutrientScale = 2e4
 	val feelWallScale = 0.3e4
 	
 	
 	//training
 	val germEnergyCost = { germ: Germ ->
-		Math.pow(germ.velocity.absolute(), 2.0) * 5.0e-4 + 1.0e-4
+		germ.velocity.absolute() * 5.0e-4
 	}
-	val germRealLoss = { germ:Germ ->
-		0.1 / (germ.energy + 0.12)
+	val germRealLoss = { actTimeEnergy: Double, hopeTimeEnergy: Double ->
+		(actTimeEnergy - hopeTimeEnergy)*2.0
 	}
 	val energyLogBufferSize = 1280
 	
 	val isTraining = false
-	val hopeTime = 200.0
+	val hopeTime = 100.0
 	val actInterval = hopeTime/1.0
-	val disturbRate = 0.5..1.0
+	val disturbRate = 1.0..1.0
 	val disturbForce = 0.4
 	
 	
 	//process & viewing
-	val processCount = 100
+	val trainProcessCount = 500
+	val viewProcessCount = 10
+	val processCount = if(isTraining) trainProcessCount else viewProcessCount
 	val processUnit = 1.0
 	val frameInterval = 20L
 	val viewPadding = 30.0

@@ -37,7 +37,7 @@ class GermView : Parent() {
 			stroke = Color.WHITE
 		}
 		
-		this.children.addAll(circle_body,circle_brain,line_feelNutrient,line_feelGerm, line_actVelocity)
+		this.children.addAll(circle_body, circle_brain, line_feelNutrient, line_feelGerm, line_actVelocity)
 		
 	}
 	
@@ -46,8 +46,7 @@ class GermView : Parent() {
 		circle_body.run {
 			centerX = germ.position.x
 			centerY = germ.position.y
-			val colorRate = germ.energy * 0.9 + 0.1
-			fill = Color(1.0, 1.0, 1.0, colorRate)
+			fill = Color(1.0, 1.0, 1.0, 0.2)
 		}
 		circle_brain.run {
 			centerX = germ.position.x

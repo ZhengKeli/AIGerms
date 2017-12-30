@@ -1,10 +1,10 @@
 package zkl.aiGames.germs.logic
 
 import zkl.aiGames.germs.Conf
+import zkl.aiGames.germs.nerveCore.ClientNerveCore
 import zkl.aiGames.germs.nerveCore.GermFeel
 import zkl.aiGames.germs.nerveCore.GermLog
 import zkl.aiGames.germs.nerveCore.NerveCore
-import zkl.aiGames.germs.nerveCore.TFNerveCore
 import zkl.tools.math.MT
 import zkl.tools.math.Point2D
 import zkl.tools.math.mutableZeroPoint2D
@@ -59,21 +59,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			
 		}
 		
-		//die
-		if (Conf.germStarveToDeath) {
-			var removedCount = 0
-			_germs.removeIf { germ->
-				if(germ.energy <= 0.01){
-					removedCount++
-					true
-				}else false
-			}
-			for(i in 1..removedCount){
-				putGerm()
-			}
-		}
-		
-		processedTime+=time
+		processedTime += time
 	}
 	
 	@Synchronized fun putGerm(count:Int=1) {
@@ -93,7 +79,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			}
 		}
 	}
-	@Synchronized fun putNutrient(amount:Double,position: Point2D) {
+	@Synchronized fun putNutrient(amount: Double, position: Point2D) {
 		val nutrient = Nutrient()
 		nutrient.amount = amount
 		nutrient.position = position
@@ -102,7 +88,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 	
 	
 	//training
-	private val nerveCore: NerveCore = TFNerveCore()
+	private val nerveCore: NerveCore = ClientNerveCore()
 	var trainedCount = 0
 		private set
 	
@@ -113,9 +99,9 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			val iterator = germ.logs.iterator()
 			while (iterator.hasNext()) {
 				val log = iterator.next()
-				if (log.actTime < availableTime) {
+				if (log.actTime <= availableTime) {
 					//take the available logs
-					log.realLoss = Conf.germRealLoss(germ)
+					log.hopeTimeEnergy = germ.energy
 					logBuffer.add(log)
 					iterator.remove()
 				}
@@ -154,8 +140,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 					x = -const / (dx1 * dx1) + const / (dx2 * dx2),
 					y = -const / (dy1 * dy1) + const / (dy2 * dy2))
 			}
-			val energy = germ.energy
-			germ.feel = GermFeel(feelNutrient, feelGerm, feelWall, energy)
+			germ.feel = GermFeel(feelNutrient, feelGerm, feelWall)
 			germ.feel
 		}
 		
@@ -177,7 +162,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			
 			//add log if is training
 			if (isTraining) {
-				val germLog = GermLog(processedTime, germ.feel, germ.act, 0.0)
+				val germLog = GermLog(processedTime, germ.energy, germ.feel, germ.act)
 				germ.logs.addLast(germLog)
 			}
 			
