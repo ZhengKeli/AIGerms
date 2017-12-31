@@ -1,7 +1,6 @@
 package zkl.aiGames.germs.logic
 
 import zkl.aiGames.germs.Conf
-import zkl.aiGames.germs.nerveCore.ClientNerveCore
 import zkl.aiGames.germs.nerveCore.GermFeel
 import zkl.aiGames.germs.nerveCore.GermLog
 import zkl.aiGames.germs.nerveCore.NerveCore
@@ -11,37 +10,56 @@ import zkl.tools.math.mutableZeroPoint2D
 import zkl.tools.math.pointOf
 
 
-class Dish(val dishSize:Double = Conf.dishSize) {
+class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	
-	val germs: List<Germ> get() = _germs
-	private val _germs = ArrayList<Germ>()
-	val nutrients: List<Nutrient> get() = _nutrients
-	private val _nutrients = ArrayList<Nutrient>()
+	//contents
+	val germs = ArrayList<Germ>()
+	
+	fun putGerm(count: Int = 1) {
+		repeat(count) { id ->
+			val germ = Germ()
+			germ.position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
+			germ.disturbRate = Conf.disturbRate.run { start + (endInclusive - start) / count * id }
+			germs.add(germ)
+		}
+	}
+	
+	
+	val nutrients = ArrayList<Nutrient>()
+	
+	fun putNutrient(amount: Double, position: Point2D) {
+		val nutrient = Nutrient()
+		nutrient.amount = amount
+		nutrient.position = position
+		nutrients.add(nutrient)
+	}
+	
+	fun putRandomNutrients(count: Int = 1) {
+		repeat(count) {
+			if (nutrients.size < Conf.nutrientMaxCount) {
+				val amount = MT.random(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
+				val position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
+				putNutrient(amount, position)
+			}
+		}
+	}
 	
 	
 	//processing
 	var processedTime = 0.0
-	@Synchronized fun initialize() {
-		println("initializing nerve network")
-		nerveCore.initialize()
-		println("initialization done")
-	}
-	@Synchronized fun finalize(saveGraph:Boolean = Conf.isTraining) {
-		nerveCore.finalize(saveGraph)
-		if(saveGraph) println("graph saved")
-	}
-	@Synchronized fun process(time: Double= Conf.processUnit) {
+	
+	fun process(time: Double = Conf.processUnit) {
 		
 		//nutrients move
-		_nutrients.forEach {
-			it.run {
+		nutrients.forEach { nutrient ->
+			nutrient.run {
 				velocity += randomPoint2D(Conf.nutrientDisturbForce)
 				position += velocity * time
 			}
 		}
 		
 		//move and eat
-		_germs.forEach { germ ->
+		germs.forEach { germ ->
 			
 			//move
 			germ.run {
@@ -50,7 +68,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 			}
 			
 			//eat
-			_nutrients.removeIf { nutrient ->
+			nutrients.removeIf { nutrient ->
 				if ((nutrient.position - germ.position).absolute() < Conf.germRadius) {
 					germ.energy += nutrient.amount
 					true
@@ -62,67 +80,25 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		processedTime += time
 	}
 	
-	@Synchronized fun putGerm(count:Int=1) {
-		repeat(count){ id->
-			val germ = Germ()
-			germ.position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
-			germ.disturbRate = Conf.disturbRate.run { start+(endInclusive-start)/count*id }
-			_germs.add(germ)
-		}
-	}
-	@Synchronized fun putRandomNutrients(count:Int=1) {
-		repeat(count){
-			if (_nutrients.size < Conf.nutrientMaxCount) {
-				val amount = MT.random(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
-				val position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
-				putNutrient(amount, position)
-			}
-		}
-	}
-	@Synchronized fun putNutrient(amount: Double, position: Point2D) {
-		val nutrient = Nutrient()
-		nutrient.amount = amount
-		nutrient.position = position
-		_nutrients.add(nutrient)
-	}
-	
 	
 	//training
-	private val nerveCore: NerveCore = ClientNerveCore()
 	var trainedCount = 0
 		private set
 	
-	private val logBuffer = ArrayList<GermLog>()
-	@Synchronized fun maintainLogs(){
-		val availableTime = processedTime - Conf.hopeTime
-		_germs.forEach { germ->
-			val iterator = germ.logs.iterator()
-			while (iterator.hasNext()) {
-				val log = iterator.next()
-				if (log.actTime <= availableTime) {
-					//take the available logs
-					log.hopeTimeEnergy = germ.energy
-					logBuffer.add(log)
-					iterator.remove()
-				}
-			}
-		}
-	}
-	
-	@Synchronized fun runActor(isTraining:Boolean=true) {
+	fun runActor(isTraining: Boolean = true) {
 		
 		//feel
-		val feels = _germs.map { germ ->
+		val feels = germs.map { germ ->
 			val feelNutrient = mutableZeroPoint2D().apply {
-				_nutrients.forEach { nutrient ->
+				nutrients.forEach { nutrient ->
 					val d = nutrient.position - germ.position
 					val r = Math.max(d.absolute(), 1.0)
 					val m = Conf.feelNutrientScale * nutrient.amount / r / r - 0.05
-					if(m>0) selfOffset(d * (m / r))
+					if (m > 0) selfOffset(d * (m / r))
 				}
 			}.limitRound(Conf.feelNutrientMax)
 			val feelGerm = mutableZeroPoint2D().apply {
-				_germs.forEach { otherGerm ->
+				germs.forEach { otherGerm ->
 					if (otherGerm == germ) return@forEach
 					val d = otherGerm.position - germ.position
 					val r = Math.max(d.absolute(), Conf.germRadius)
@@ -148,7 +124,7 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		val germActs = nerveCore.runActor(feels)
 		
 		//apply result
-		_germs.forEachIndexed { index, germ ->
+		germs.forEachIndexed { index, germ ->
 			
 			//apply act
 			germ.act = germActs[index]
@@ -169,8 +145,28 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 		}
 		
 	}
-	@Synchronized fun trainActor() {
-		if(logBuffer.size==0) return
+	
+	
+	private val logBuffer = ArrayList<GermLog>()
+	
+	fun maintainLogs() {
+		val availableTime = processedTime - Conf.hopeTime
+		germs.forEach { germ ->
+			val iterator = germ.logs.iterator()
+			while (iterator.hasNext()) {
+				val log = iterator.next()
+				if (log.actTime <= availableTime) {
+					//take the available logs
+					log.hopeTimeEnergy = germ.energy
+					logBuffer.add(log)
+					iterator.remove()
+				}
+			}
+		}
+	}
+	
+	fun trainActor() {
+		if (logBuffer.size == 0) return
 		nerveCore.trainCritic(logBuffer)
 		nerveCore.trainActor(logBuffer.map { it.feel })
 		trainedCount += logBuffer.size
@@ -179,8 +175,8 @@ class Dish(val dishSize:Double = Conf.dishSize) {
 	
 	
 	//logging
-	@Synchronized fun getAverageEnergy(): Double {
-		return _germs.sumByDouble { it.energy } / _germs.size
+	fun getAverageEnergy(): Double {
+		return germs.sumByDouble { it.energy } / germs.size
 	}
 	
 }

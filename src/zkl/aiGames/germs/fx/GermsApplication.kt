@@ -12,12 +12,13 @@ import javafx.stage.Stage
 import zkl.aiGames.germs.Conf
 import zkl.aiGames.germs.logic.Dish
 import zkl.aiGames.germs.logic.randomPoint2D
+import zkl.aiGames.germs.nerveCore.NerveCore
 import zkl.tools.math.MT
 import zkl.tools.math.pointOf
 import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
-	Application.launch(GermsApplication::class.java,*args)
+	Application.launch(GermsApplication::class.java, *args)
 }
 
 class GermsApplication : Application() {
@@ -25,32 +26,34 @@ class GermsApplication : Application() {
 	//ui
 	lateinit var stage: Stage
 	lateinit var rootNote: Pane
-	lateinit var dishView:DishView
+	lateinit var dishView: DishView
 	override fun start(stage: Stage) {
 		this.stage = stage
 		initStage()
 	}
+	
 	private fun initStage() {
 		stage.scene = Scene(initDishView(), Conf.stageSize, Conf.stageSize)
 		stage.title = "germs"
 		stage.isIconified = false
 		stage.setOnHidden {
 			stopProcess()
-			dish.finalize()
+			nerveCore.finish()
 		}
 		stage.show()
 	}
+	
 	private fun initDishView(): Parent {
 		dishView = DishView()
 		
 		rootNote = Pane(dishView)
 		rootNote.setOnMouseClicked {
-			initLogic()
+			initDish()
 			startProcess()
-			rootNote.setOnMouseClicked { e->
+			rootNote.setOnMouseClicked { e ->
 				synchronized(dish) {
 					val clickPosition = pointOf(e.x - Conf.viewPadding, e.y - Conf.viewPadding)
-					repeat(10){
+					repeat(10) {
 						val position = clickPosition + randomPoint2D(30.0)
 						val amount = MT.random(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
 						dish.putNutrient(amount, position)
@@ -58,26 +61,25 @@ class GermsApplication : Application() {
 				}
 			}
 		}
-		rootNote.background= Background(BackgroundFill(Color.DARKGRAY,null,null))
+		rootNote.background = Background(BackgroundFill(Color.DARKGRAY, null, null))
 		
 		return rootNote
 	}
 	
-	private fun updateFrame(){
+	private fun updateFrame() {
 		dishView.update(dish)
 	}
 	
 	
-	
 	//process
-	var wantProcess:Boolean=false
-	var processThread:Thread?=null
-	private fun startProcess(){
+	var wantProcess: Boolean = false
+	var processThread: Thread? = null
+	private fun startProcess() {
 		stopProcess()
-		wantProcess=true
-		processThread= thread {
+		wantProcess = true
+		processThread = thread {
 			while (wantProcess) {
-					onProcess()
+				onProcess()
 				try {
 					Thread.sleep(Conf.frameInterval)
 				} catch (e: InterruptedException) {
@@ -86,13 +88,15 @@ class GermsApplication : Application() {
 			}
 		}
 	}
-	private fun stopProcess(){
-		wantProcess =false
+	
+	private fun stopProcess() {
+		wantProcess = false
 		processThread?.join()
 	}
+	
 	private fun onProcess() {
 		try {
-			processLogic()
+			processDish()
 			Platform.runLater {
 				updateFrame()
 			}
@@ -106,18 +110,22 @@ class GermsApplication : Application() {
 	}
 	
 	
+	//nerveCore
+	val nerveCore = NerveCore()
+	
 	
 	//logic
-	val dish = Dish()
+	val dish = Dish(nerveCore, Conf.dishSize)
 	var lastTimePutNutrient = 0.0
 	var lastTimeRunActor = 0.0
 	var energyLogs = ArrayList<Double>(Conf.energyLogBufferSize)
-	private fun initLogic(){
-		dish.initialize()
+	
+	private fun initDish() {
 		dish.putGerm(Conf.germCount)
 	}
-	private fun processLogic(){
-		repeat(Conf.processCount){
+	
+	private fun processDish() {
+		repeat(Conf.processCount) {
 			if (dish.processedTime - lastTimePutNutrient >= Conf.nutrientInterval) {
 				dish.putRandomNutrients()
 				lastTimePutNutrient = dish.processedTime
@@ -141,8 +149,8 @@ class GermsApplication : Application() {
 				energyLogs.clear()
 			}
 		}
-		
 	}
+	
 	
 }
 
