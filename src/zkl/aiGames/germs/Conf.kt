@@ -6,13 +6,13 @@ import zkl.aiGames.germs.logic.Germ
 object Conf {
 	
 	//basic
-	val dishSize = 100.0
+	val dishSize = 400.0
 	
-	val germCount = 1
+	val germCount = 10
 	val germRadius = 20.0
 	
-	val nutrientInterval = 1e3/1.0
-	val nutrientMaxCount = 1
+	val nutrientInterval = 1e4 / (dishSize * germCount)
+	val nutrientMaxCount = germCount * 1.5
 	val nutrientAmountRange = 0.5..0.5
 	val nutrientMaxVelocity = 0.1
 	val nutrientDisturbForce = 1e-4
@@ -33,11 +33,11 @@ object Conf {
 	}
 	val energyLogBufferSize = 1280
 	
-	val isTraining = false
+	val isTraining = true
 	val hopeTime = 100.0
-	val actInterval = hopeTime/1.0
-	val disturbRate = 1.0..1.0
-	val disturbForce = 0.4
+	val actInterval = hopeTime/4.0
+	val disturbRate = 0.0..0.8
+	val disturbForce = 0.2
 	
 	
 	//process & viewing

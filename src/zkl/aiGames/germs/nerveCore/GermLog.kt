@@ -5,8 +5,7 @@ import zkl.tools.math.Point2D
 
 data class GermLog(
 	val actTime: Double,
-	val actTimeEnergy:Double,
-	
+	val actTimeEnergy: Double,
 	var feel: GermFeel,
 	var act: GermAct
 ) {
