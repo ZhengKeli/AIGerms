@@ -18,6 +18,14 @@ class GermsIO:
     def flush(self):
         pass
 
+    @abstractmethod
+    def close(self):
+        pass
+
+    @abstractmethod
+    def is_closed(self) -> bool:
+        pass
+
     # reader
     def read_int(self):
         read_bytes = self.read(4)
