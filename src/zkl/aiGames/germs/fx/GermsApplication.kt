@@ -112,11 +112,11 @@ class GermsApplication : Application() {
 	
 	
 	//nerveCore
-	val nerveCore = NerveCore()
 	
 	
 	//logic
-	val dish = Dish(nerveCore, Conf.dishSize)
+	val nerveCore by lazy { NerveCore() }
+	val dish by lazy { Dish(nerveCore, Conf.dishSize) }
 	var lastTimePutNutrient = 0.0
 	var lastTimeRunActor = 0.0
 	var energyLogs = ArrayList<Double>(Conf.energyLogBufferSize)

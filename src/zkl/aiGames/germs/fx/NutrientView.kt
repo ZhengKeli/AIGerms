@@ -9,7 +9,7 @@ class NutrientView(centerX: Double = 0.0, centerY: Double = 0.0, radius: Double 
 	fun update(nutrient: Nutrient) {
 		centerX = nutrient.position.x
 		centerY = nutrient.position.y
-		radius = Math.sqrt(nutrient.amount)*5.0
+		radius = Math.sqrt(nutrient.amount)
 	}
 	
 }
