@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/AIGerms.iml" filepath="$PROJECT_DIR$/AIGerms.iml" />
-      <module fileurl="file://$PROJECT_DIR$/py/py.iml" filepath="$PROJECT_DIR$/py/py.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nerve/nerve.iml" filepath="$PROJECT_DIR$/nerve/nerve.iml" />
+      <module fileurl="file://$PROJECT_DIR$/physics/physics.iml" filepath="$PROJECT_DIR$/physics/physics.iml" />
     </modules>
   </component>
 </project>

@@ -12,7 +12,7 @@ object Conf {
 	val germRadius = 20.0
 	
 	val nutrientInterval = 1e4 / (dishSize * germCount) / 0.005
-	val nutrientMaxCount = germCount * 0.1
+	val nutrientMaxCount = germCount * 0.3
 	val nutrientAmountRange = 12.0..12.0
 	val nutrientMaxVelocity = 0.1
 	val nutrientDisturbForce = 1e-4
