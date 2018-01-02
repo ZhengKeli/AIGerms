@@ -15,6 +15,7 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	//contents
 	val germs = ArrayList<Germ>()
 	
+	@Synchronized
 	fun putGerm(count: Int = 1) {
 		repeat(count) { id ->
 			val germ = Germ()
@@ -27,6 +28,7 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	
 	val nutrients = ArrayList<Nutrient>()
 	
+	@Synchronized
 	fun putNutrient(amount: Double, position: Point2D) {
 		val nutrient = Nutrient()
 		nutrient.amount = amount
@@ -34,6 +36,7 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 		nutrients.add(nutrient)
 	}
 	
+	@Synchronized
 	fun putRandomNutrients(count: Int = 1) {
 		repeat(count) {
 			if (nutrients.size < Conf.nutrientMaxCount) {
@@ -48,6 +51,7 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	//processing
 	var processedTime = 0.0
 	
+	@Synchronized
 	fun process(time: Double = Conf.processUnit) {
 		
 		//nutrients move
@@ -85,6 +89,7 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	var trainedCount = 0
 		private set
 	
+	@Synchronized
 	fun runActor(isTraining: Boolean = true) {
 		
 		//feel
@@ -149,6 +154,7 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	
 	private val logBuffer = ArrayList<GermLog>()
 	
+	@Synchronized
 	fun maintainLogs() {
 		val availableTime = processedTime - Conf.hopeTime
 		germs.forEach { germ ->
@@ -165,6 +171,7 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 		}
 	}
 	
+	@Synchronized
 	fun trainActor() {
 		if (logBuffer.size == 0) return
 		nerveCore.trainCritic(logBuffer)
@@ -175,6 +182,7 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	
 	
 	//logging
+	@Synchronized
 	fun getAverageEnergy(): Double {
 		return germs.sumByDouble { it.energy } / germs.size
 	}

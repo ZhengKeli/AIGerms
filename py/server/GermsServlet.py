@@ -57,7 +57,7 @@ class GermsServlet:
         val_feel = val_log[:, 0:6]
         val_act = val_log[:, 6:8]
         val_real_loss = val_log[:, 8]
-        self.core.run_train_critic(val_feel, val_act, val_real_loss)
+        train_critic,ass_loss,loss_loss = self.core.run_train_critic(val_feel, val_act, val_real_loss)
 
         self.io.write_int(STU_SUCCEED)
         self.io.flush()

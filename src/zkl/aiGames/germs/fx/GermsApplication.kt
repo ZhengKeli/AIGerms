@@ -38,7 +38,7 @@ class GermsApplication : Application() {
 		stage.isIconified = false
 		stage.setOnHidden {
 			stopProcess()
-			nerveCore.saveGraph()
+			if(Conf.isTraining) nerveCore.saveGraph()
 			nerveCore.finish()
 		}
 		stage.show()

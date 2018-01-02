@@ -28,7 +28,7 @@ fun DataOutputStream.writeGermAct(germAct: GermAct) {
 fun DataOutputStream.writeGermLog(germLog: GermLog) {
 	writeGermFeel(germLog.feel)
 	writeGermAct(germLog.act)
-	writeFloat((-1.0 + germLog.realLoss * 2.0).toFloat())
+	writeFloat(germLog.realLoss.toFloat())
 }
 
 fun <T> DataInputStream.readList(decoder: DataInputStream.() -> T): List<T> {

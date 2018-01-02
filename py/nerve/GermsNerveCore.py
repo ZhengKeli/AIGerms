@@ -51,7 +51,7 @@ class GermsNerveCore(NerveCore):
             critic_x = critic_network.apply(situation_x)  # [-1,8]
             critic_y = critic_network.apply(situation_y)  # [-1,8]
 
-            ass_loss = tf.square(tf.concat([critic_x, critic_y], -1))  # [-1,16]
+            ass_loss = tf.concat([critic_x, critic_y], -1)  # [-1,16]
             ass_loss = tf.reduce_mean(ass_loss, -1, name="ass_loss")  # [-1]
             ave_ass_loss = tf.reduce_mean(ass_loss)
 
@@ -104,7 +104,7 @@ class GermsNerveCore(NerveCore):
             fetches=[
                 self.train_critic,
                 self.ass_loss,
-                self.loss_loss
+                self.loss_loss,
             ],
             feed_dict={
                 self.feel: val_feel,

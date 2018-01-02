@@ -11,9 +11,9 @@ object Conf {
 	val germCount = 10
 	val germRadius = 20.0
 	
-	val nutrientInterval = 1e4 / (dishSize * germCount) / 0.07 / 0.00001
-	val nutrientMaxCount = germCount * 1.5
-	val nutrientAmountRange = 8.0..8.0
+	val nutrientInterval = 1e4 / (dishSize * germCount) / 0.005
+	val nutrientMaxCount = germCount * 0.1
+	val nutrientAmountRange = 12.0..12.0
 	val nutrientMaxVelocity = 0.1
 	val nutrientDisturbForce = 1e-4
 	
@@ -26,22 +26,22 @@ object Conf {
 	
 	//training
 	val germEnergyCost = { germ: Germ ->
-		germ.velocity.run { x * x + y * y } * 0.1
+		germ.velocity.run { x * x + y * y } * 0.10
 	}
 	val germRealLoss = { actTimeEnergy: Double, hopeTimeEnergy: Double ->
-		(actTimeEnergy - hopeTimeEnergy)*2.0
+		((actTimeEnergy - hopeTimeEnergy)*0.01).coerceIn(-1.0, 1.0)
 	}
 	val energyLogBufferSize = 1280
 	
 	val isTraining = false
-	val hopeTime = 100.0
-	val actInterval = hopeTime/4.0
-	val disturbRate = 0.0..1.0
+	val hopeTime = 160.0
+	val actInterval = hopeTime/8.0
+	val disturbRate = 0.0..0.5
 	val disturbForce = 0.4
 	
 	
 	//process & viewing
-	val trainProcessCount = 500
+	val trainProcessCount = 100
 	val viewProcessCount = 5
 	val processCount = if(isTraining) trainProcessCount else viewProcessCount
 	val processUnit = 1.0
