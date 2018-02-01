@@ -10,6 +10,11 @@ class GermsNerveCore(NerveCore):
         with self.graph.as_default() as graph:
             self.feel = graph.get_tensor_by_name("feel:0")
             self.act = graph.get_tensor_by_name("act:0")
+            self.logs = graph.get_tensor_by_name("logs:0")
+            self.memory_base = graph.get_tensor_by_name("memory_base:0")
+
+            self.log_feels = graph.get_tensor_by_name("log_feels:0")
+            self.log_acts = graph.get_tensor_by_name("log_acts:0")
 
             self.ass_loss = graph.get_tensor_by_name("ass_loss:0")
             self.real_loss = graph.get_tensor_by_name("real_loss:0")
@@ -22,63 +27,73 @@ class GermsNerveCore(NerveCore):
 
     def create_graph(self):
         with self.graph.as_default():
+            class ActorNetwork(FullConnectedNetwork):
+                def __init__(self, shape, activation):
+                    super().__init__(shape, activation)
 
-            feel = tf.placeholder(tf.float32, [None, 6], name="feel")  # [-1,6]
+                def apply(self, inputs, name=None):
+                    act_x, act_y = tf.split(super().apply(inputs, None), 2, -1)
+                    act_x = tf.reduce_mean(act_x, -1, keep_dims=True)
+                    act_y = tf.reduce_mean(act_y, -1, keep_dims=True)
+                    return tf.concat([act_x, act_y], -1, name)  # [..,2]
 
-            # actor network
-            feel_network = FullConnectedNetwork([3, 16, 15], tf.nn.tanh)
-            act_network = FullConnectedNetwork([15, 4], tf.nn.tanh)
+            with tf.name_scope("feel"):
+                feel_network = FullConnectedNetwork([6, 16, 14], tf.nn.tanh)
 
-            feel_x = tf.stack([feel[:, 0], feel[:, 2], feel[:, 4]], -1)  # [-1,3]
-            feel_y = tf.stack([feel[:, 1], feel[:, 3], feel[:, 5]], -1)  # [-1,3]
+                feel = tf.placeholder(tf.float32, [None, 6], name="feel")  # [bs,6]
+                perception = feel_network.apply(feel)  # [bs,14]
 
-            perception_x = feel_network.apply(feel_x)  # [-1,15]
-            perception_y = feel_network.apply(feel_y)  # [-1,15]
+                log_feels = tf.placeholder(tf.float32, [None, 8, 6], name="log_feels")  # [bs,8,6]
+                log_perceptions = feel_network.apply(log_feels)  # [bs,8,14]
 
-            act_x = act_network.apply(perception_x)  # [-1,4]
-            act_x = tf.reduce_mean(act_x, -1, keep_dims=True)  # [-1,1]
-            act_y = act_network.apply(perception_y)  # [-1,4]
-            act_y = tf.reduce_mean(act_y, -1, keep_dims=True)  # [-1,1]
+            with tf.name_scope("actor"):
+                actor_network = ActorNetwork([14, 16, 8], tf.nn.tanh)
 
-            act = tf.concat([act_x, act_y], -1, "act")  # [-1,2]
+                act = actor_network.apply(perception, "act")  # [bs,2]
+                log_acts = actor_network.apply(log_perceptions, name="log_acts")  # [bs,8,2]
 
-            # critic network
-            critic_network = FullConnectedNetwork([16, 8], tf.nn.tanh)
+            with tf.name_scope("critic"):
+                cell_network = FullConnectedNetwork([32, 16, 16], tf.nn.tanh)
+                ass_network = FullConnectedNetwork([16, 8], tf.nn.tanh)
 
-            situation_x = tf.concat([perception_x, act[:, 0:1]], 1)  # [-1,16]
-            situation_y = tf.concat([perception_y, act[:, 1:2]], 1)  # [-1,16]
+                log_situations = tf.concat([log_perceptions, log_acts], -1)  # [bs,8,16]
+                log_situation_list = tf.unstack(log_situations, 8, -2)  # 8*[bs,16]
 
-            critic_x = critic_network.apply(situation_x)  # [-1,8]
-            critic_y = critic_network.apply(situation_y)  # [-1,8]
+                memory_base = tf.placeholder(tf.float32, [None, 16], name="memory_base")  # [bs,16]
+                cycle_output = memory_base  # [bs,16]
+                for i in range(8):
+                    cycle_input = tf.concat([log_situation_list[i], cycle_output], -1)  # [bs,32]
+                    cycle_output = cell_network.apply(cycle_input)  # [bs,16]
 
-            ass_loss = tf.concat([critic_x, critic_y], -1)  # [-1,16]
-            ass_loss = tf.reduce_mean(ass_loss, -1, name="ass_loss")  # [-1]
-            ave_ass_loss = tf.reduce_mean(ass_loss)
+                ass_loss = ass_network.apply(cycle_output)  # [bs,8]
+                ass_loss = tf.reduce_mean(ass_loss, -1, name="ass_loss")  # [bs]
+                ave_ass_loss = tf.reduce_mean(ass_loss, name="ave_ass_loss")
 
-            # train
-            real_loss = tf.placeholder(tf.float32, name="real_loss")  # [-1]
-            loss_loss = tf.square(ass_loss - real_loss, name="loss_loss")  # [-1]
-            ave_loss_loss = tf.reduce_mean(loss_loss)
+            with tf.name_scope("train"):
+                real_loss = tf.placeholder(tf.float32, name="real_loss")  # [bs]
+                loss_loss = tf.square(ass_loss - real_loss, name="loss_loss")  # [bs]
+                ave_loss_loss = tf.reduce_mean(loss_loss, name="ave_loss_loss")
 
-            learning_rate_actor = tf.Variable(5e-3, name="learning_rate_actor")
-            tf.train.AdamOptimizer(learning_rate_actor).minimize(
-                name="train_actor",
-                loss=ave_ass_loss,
-                var_list=[
-                    feel_network.weights, feel_network.bias,
-                    act_network.weights, act_network.bias
-                ],
-            )
+                learning_rate_actor = tf.Variable(5e-3, name="learning_rate_actor")
+                tf.train.AdamOptimizer(learning_rate_actor).minimize(
+                    name="train_actor",
+                    loss=ave_ass_loss,
+                    var_list=[
+                        feel_network.weights, feel_network.bias,
+                        actor_network.weights, actor_network.bias
+                    ],
+                )
 
-            learning_rate_critic = tf.Variable(5e-3, name="learning_rate_critic")
-            tf.train.AdamOptimizer(learning_rate_critic).minimize(
-                name="train_critic",
-                loss=ave_loss_loss,
-                var_list=[
-                    feel_network.weights, feel_network.bias,
-                    critic_network.weights, critic_network.bias
-                ],
-            )
+                learning_rate_critic = tf.Variable(5e-3, name="learning_rate_critic")
+                tf.train.AdamOptimizer(learning_rate_critic).minimize(
+                    name="train_critic",
+                    loss=ave_loss_loss,
+                    var_list=[
+                        feel_network.weights, feel_network.bias,
+                        cell_network.weights, cell_network.bias,
+                        ass_network.weights, ass_network.bias
+                    ],
+                )
 
             self.sess.run(tf.global_variables_initializer())
 
@@ -90,16 +105,16 @@ class GermsNerveCore(NerveCore):
             }
         )
 
-    def run_critic(self, val_feel, val_act):
+    def run_critic(self, val_log_feels, val_log_acts):
         return self.sess.run(
             fetches=self.ass_loss,
             feed_dict={
-                self.feel: val_feel,
-                self.act: val_act
+                self.log_feels: val_log_feels,
+                self.log_acts: val_log_acts
             }
         )
 
-    def run_train_critic(self, val_feel, val_act, val_real_loss):
+    def run_train_critic(self, val_log_feels, val_log_acts, val_real_loss):
         return self.sess.run(
             fetches=[
                 self.train_critic,
@@ -107,19 +122,20 @@ class GermsNerveCore(NerveCore):
                 self.loss_loss,
             ],
             feed_dict={
-                self.feel: val_feel,
-                self.act: val_act,
+                self.log_feels: val_log_feels,
+                self.log_acts: val_log_acts,
                 self.real_loss: val_real_loss,
             }
         )
 
-    def run_train_actor(self, val_feel):
+    def run_train_actor(self, val_log_feels):
         return self.sess.run(
             fetches=[
                 self.train_actor,
-                self.ass_loss],
+                self.ass_loss
+            ],
             feed_dict={
-                self.feel: val_feel,
+                self.log_feels: val_log_feels,
                 self.real_loss: None,
             }
         )
