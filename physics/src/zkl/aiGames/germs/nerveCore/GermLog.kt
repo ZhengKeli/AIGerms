@@ -1,15 +1,18 @@
 package zkl.aiGames.germs.nerveCore
 
 import zkl.aiGames.germs.Conf
-import zkl.tools.math.Point2D
+import zkl.tools.math.geometry.Point2D
 
 data class GermLog(
 	val actTime: Double,
+	val feels: ArrayList<GermFeel>,
+	val acts: ArrayList<GermAct>,
 	val actTimeEnergy: Double,
-	var feel: GermFeel,
-	var act: GermAct
+	var hopeTimeEnergy: Double
 ) {
-	var hopeTimeEnergy: Double = actTimeEnergy
+	constructor(actTime: Double, actTimeFeel: GermFeel, actTimeAct: GermAct, actTimeEnergy: Double)
+		: this(actTime, arrayListOf(actTimeFeel), arrayListOf(actTimeAct), actTimeEnergy, actTimeEnergy)
+	
 	val realLoss: Double get() = Conf.germRealLoss(actTimeEnergy, hopeTimeEnergy)
 }
 

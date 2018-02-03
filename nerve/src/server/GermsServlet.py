@@ -53,18 +53,18 @@ class GermsServlet:
         self.io.flush()
 
     def com_train_critic(self):
-        val_log = np.array(self.io.read_list(self.io.read_log))
-        val_feel = val_log[:, 0:6]
-        val_act = val_log[:, 6:8]
-        val_real_loss = val_log[:, 8]
-        train_critic,ass_loss,loss_loss = self.core.run_train_critic(val_feel, val_act, val_real_loss)
+        val_log_list = self.io.read_list(self.io.read_log)
+        val_log_feels = [val_log[0] for val_log in val_log_list]
+        val_log_acts = [val_log[1] for val_log in val_log_list]
+        val_real_loss = [val_log[2] for val_log in val_log_list]
+        self.core.run_train_critic(val_log_feels, val_log_acts, val_real_loss)
 
         self.io.write_int(STU_SUCCEED)
         self.io.flush()
 
     def com_train_actor(self):
-        val_feel = np.array(self.io.read_list(self.io.read_feel))
-        self.core.run_train_actor(val_feel)
+        val_log_feels = np.array(self.io.read_list(lambda: self.io.read_list(self.io.read_feel)))
+        self.core.run_train_actor(val_log_feels)
 
         self.io.write_int(STU_SUCCEED)
         self.io.flush()

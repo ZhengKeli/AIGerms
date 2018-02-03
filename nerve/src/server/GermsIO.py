@@ -39,14 +39,16 @@ class GermsIO:
         return [decoder() for x in range(size)]
 
     def read_feel(self):
-        # 2+2+2 = 6
-        feel = struct.unpack("!6f", self.read(6 * 4))
-        return feel
+        return struct.unpack("!6f", self.read(6 * 4))  # 2+2+2 = 6
+
+    def read_act(self):
+        return struct.unpack("!2f", self.read(2 * 4))
 
     def read_log(self):
-        # 6+2+1 = 9
-        log = struct.unpack("!9f", self.read(9 * 4))
-        return log
+        val_log_feels = self.read_list(self.read_feel)
+        val_log_acts = self.read_list(self.read_act)
+        val_real_loss = self.read_float()
+        return val_log_feels, val_log_acts, val_real_loss
 
     # writers
     def write_int(self, value):

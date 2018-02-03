@@ -1,13 +1,12 @@
 package zkl.aiGames.germs.logic
 
 import zkl.aiGames.germs.Conf
+import zkl.aiGames.germs.Conf.logBufferSize
 import zkl.aiGames.germs.nerveCore.GermFeel
 import zkl.aiGames.germs.nerveCore.GermLog
 import zkl.aiGames.germs.nerveCore.NerveCore
-import zkl.tools.math.MT
-import zkl.tools.math.Point2D
-import zkl.tools.math.mutableZeroPoint2D
-import zkl.tools.math.pointOf
+import zkl.tools.math.geometry.*
+import zkl.tools.math.random.Random
 
 
 class Dish(val nerveCore: NerveCore, val dishSize: Double) {
@@ -40,7 +39,7 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	fun putRandomNutrients(count: Int = 1) {
 		repeat(count) {
 			if (nutrients.size < Conf.nutrientMaxCount) {
-				val amount = MT.random(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
+				val amount = Random.uniform(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
 				val position = pointOf(Math.random() * dishSize, Math.random() * dishSize)
 				putNutrient(amount, position)
 			}
@@ -142,9 +141,8 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 			germ.velocity = germ.act.velocity
 			
 			//add log if is training
-			if (isTraining) {
-				val germLog = GermLog(processedTime, germ.energy, germ.feel, germ.act)
-				germ.logs.addLast(germLog)
+			if (isTraining && germ.log == null) {
+				germ.log = GermLog(processedTime, germ.feel, germ.act, germ.energy)
 			}
 			
 		}
@@ -156,16 +154,15 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	
 	@Synchronized
 	fun maintainLogs() {
-		val availableTime = processedTime - Conf.hopeTime
 		germs.forEach { germ ->
-			val iterator = germ.logs.iterator()
-			while (iterator.hasNext()) {
-				val log = iterator.next()
-				if (log.actTime <= availableTime) {
+			germ.log?.let { log ->
+				log.feels.add(germ.feel)
+				log.acts.add(germ.act)
+				if (log.acts.size == Conf.hopeCount) {
 					//take the available logs
 					log.hopeTimeEnergy = germ.energy
 					logBuffer.add(log)
-					iterator.remove()
+					germ.log = null
 				}
 			}
 		}
@@ -173,9 +170,9 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	
 	@Synchronized
 	fun trainActor() {
-		if (logBuffer.size == 0) return
+		if (logBuffer.size < logBufferSize) return
 		nerveCore.trainCritic(logBuffer)
-		nerveCore.trainActor(logBuffer.map { it.feel })
+		nerveCore.trainActor(logBuffer)
 		trainedCount += logBuffer.size
 		logBuffer.clear()
 	}

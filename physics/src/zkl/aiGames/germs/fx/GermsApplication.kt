@@ -13,8 +13,9 @@ import zkl.aiGames.germs.Conf
 import zkl.aiGames.germs.logic.Dish
 import zkl.aiGames.germs.logic.randomPoint2D
 import zkl.aiGames.germs.nerveCore.NerveCore
-import zkl.tools.math.MT
-import zkl.tools.math.pointOf
+import zkl.tools.math.geometry.plus
+import zkl.tools.math.geometry.pointOf
+import zkl.tools.math.random.Random
 import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
@@ -38,7 +39,7 @@ class GermsApplication : Application() {
 		stage.isIconified = false
 		stage.setOnHidden {
 			stopProcess()
-			if(Conf.isTraining) nerveCore.saveGraph()
+			if (Conf.isTraining) nerveCore.saveGraph()
 			nerveCore.finish()
 		}
 		stage.show()
@@ -56,7 +57,7 @@ class GermsApplication : Application() {
 					val clickPosition = pointOf(e.x - Conf.viewPadding, e.y - Conf.viewPadding)
 					repeat(10) {
 						val position = clickPosition + randomPoint2D(30.0)
-						val amount = MT.random(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
+						val amount = Random.uniform(Conf.nutrientAmountRange.start, Conf.nutrientAmountRange.endInclusive)
 						dish.putNutrient(amount, position)
 					}
 				}

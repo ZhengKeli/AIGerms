@@ -6,6 +6,8 @@ import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
 import zkl.aiGames.germs.Conf
 import zkl.aiGames.germs.logic.Germ
+import zkl.tools.math.geometry.plus
+import zkl.tools.math.geometry.times
 
 class GermView : Parent() {
 	

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="ZKLMath 0.3">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/physics/lib/ZKLMath.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/physics/lib/ZKLMath-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

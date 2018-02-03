@@ -4,11 +4,10 @@ import zkl.aiGames.germs.Conf
 import zkl.aiGames.germs.nerveCore.GermAct
 import zkl.aiGames.germs.nerveCore.GermFeel
 import zkl.aiGames.germs.nerveCore.GermLog
-import zkl.tools.math.Point2D
-import zkl.tools.math.mutableClone
-import zkl.tools.math.pointOf
-import zkl.tools.math.zeroPoint2D
-import java.util.*
+import zkl.tools.math.geometry.Point2D
+import zkl.tools.math.geometry.mutableClone
+import zkl.tools.math.geometry.pointOf
+import zkl.tools.math.geometry.zeroPoint2D
 
 class Germ {
 	
@@ -46,7 +45,7 @@ class Germ {
 	//think in nerve
 	var feel: GermFeel = GermFeel(zeroPoint2D(), zeroPoint2D(), zeroPoint2D())
 	var act: GermAct = GermAct(zeroPoint2D())
-	val logs = LinkedList<GermLog>()
+	var log:GermLog? = null
 	
 	
 	var disturbRate :Double = 0.0

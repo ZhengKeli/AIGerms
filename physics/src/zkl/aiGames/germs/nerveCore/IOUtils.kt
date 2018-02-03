@@ -1,7 +1,7 @@
 package zkl.aiGames.germs.nerveCore
 
-import zkl.tools.math.Point2D
-import zkl.tools.math.pointOf
+import zkl.tools.math.geometry.Point2D
+import zkl.tools.math.geometry.pointOf
 import java.io.DataInputStream
 import java.io.DataOutputStream
 
@@ -26,8 +26,8 @@ fun DataOutputStream.writeGermAct(germAct: GermAct) {
 }
 
 fun DataOutputStream.writeGermLog(germLog: GermLog) {
-	writeGermFeel(germLog.feel)
-	writeGermAct(germLog.act)
+	writeList(germLog.feels, DataOutputStream::writeGermFeel)
+	writeList(germLog.acts, DataOutputStream::writeGermAct)
 	writeFloat(germLog.realLoss.toFloat())
 }
 

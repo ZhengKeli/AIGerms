@@ -1,22 +1,20 @@
 package zkl.aiGames.germs.logic
 
-import zkl.tools.math.MT
-import zkl.tools.math.Point2D
-import zkl.tools.math.mutableClone
-import zkl.tools.math.pointOf
-import java.util.*
+import zkl.tools.math.geometry.*
+import zkl.tools.math.random.Random
 
-fun Point2D.limitRound(r: Double):Point2D {
+fun Point2D.limitRound(r: Double): Point2D {
 	val absolute = this.absolute()
 	if (absolute > r) {
 		val rate = r / absolute
-		return this*rate
+		return this * rate
 	}
 	return this
 }
+
 fun Point2D.limitRect(width: Double, height: Double): Point2D {
 	val re = mutableClone()
-	when{
+	when {
 		x < 0.0 -> {
 			re.x = 0.0
 		}
@@ -24,7 +22,7 @@ fun Point2D.limitRect(width: Double, height: Double): Point2D {
 			re.x = width
 		}
 	}
-	when{
+	when {
 		y < 0.0 -> {
 			re.y = 0.0
 		}
@@ -34,8 +32,9 @@ fun Point2D.limitRect(width: Double, height: Double): Point2D {
 	}
 	return re
 }
+
 fun Point2D.isInRect(width: Double, height: Double): Boolean {
-	return when{
+	return when {
 		x < 0.0 -> false
 		x > width -> false
 		y < 0.0 -> false
@@ -44,6 +43,5 @@ fun Point2D.isInRect(width: Double, height: Double): Boolean {
 	}
 }
 
-private val random = Random()
-fun randomPoint2D(max:Double) = pointOf(MT.randomMirror(max), MT.randomMirror(max))
-fun gaussianRandomPoint2D(max:Double = 1.0) = pointOf(max *random.nextGaussian()/3.0, max *random.nextGaussian()/3.0)
+fun randomPoint2D(max: Double) = pointOf(Random.mirror(max), Random.mirror(max))
+fun gaussianRandomPoint2D(max: Double = 1.0) = pointOf(Random.normal(max / 3.0), Random.normal(max / 3.0))
