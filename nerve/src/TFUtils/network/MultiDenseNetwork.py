@@ -1,9 +1,9 @@
 import tensorflow as tf
 
-from TFUtils.network.LayerNetwork import LayerNetwork
+from TFUtils.network.MultiLayerNetwork import MultiLayerNetwork
 
 
-class FullyConnectedNetwork(LayerNetwork):
+class MultiDenseNetwork(MultiLayerNetwork):
 
     def __init__(self, size, activation):
         super().__init__(size)

@@ -5,7 +5,7 @@ import tensorflow as tf
 from TFUtils.network.Network import Network
 
 
-class LayerNetwork(Network):
+class MultiLayerNetwork(Network):
     __metaclass__ = ABCMeta
 
     def __init__(self, size):

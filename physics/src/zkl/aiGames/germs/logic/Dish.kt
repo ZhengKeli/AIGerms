@@ -80,6 +80,17 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 			
 		}
 		
+		//hit
+		germs.forEach { germ1 ->
+			germs.forEach { germ2 ->
+				if (germ1 != germ2 && (germ1.position - germ2.position).absolute() < 2.0 * Conf.germRadius) {
+					val middle = (germ1.position + germ2.position) / 2.0
+					germ1.position = middle + (germ1.position - middle).unit() * Conf.germRadius
+					germ2.position = middle + (germ2.position - middle).unit() * Conf.germRadius
+				}
+			}
+		}
+		
 		processedTime += time
 	}
 	

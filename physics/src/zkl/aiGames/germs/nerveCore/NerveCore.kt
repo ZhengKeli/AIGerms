@@ -27,11 +27,13 @@ class NerveCore(host: String = "localhost", port: Int = 8081) {
 		dataOutput.writeInt(COM_RUN_ACTOR)
 		dataOutput.writeList(feels, DataOutputStream::writeGermFeel)
 		dataOutput.flush()
-		
+
 		val status = dataInput.readInt()
 		if (status != STU_SUCCEED) throw CommandFailedException("runActor", status)
-		
+
 		return dataInput.readList(DataInputStream::readGermAct)
+//		return feels.map { GermAct(it.nutrient / 5.0) }
+		
 	}
 	
 	fun trainCritic(germLogs: List<GermLog>) {

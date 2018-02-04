@@ -37,7 +37,7 @@ object Conf {
 	val isTraining = true
 	val actInterval = 100.0
 	val hopeCount = 8
-	val disturbRate = 0.0..0.5
+	val disturbRate = 0.5..0.7
 	val disturbForce = 0.4
 	
 	

@@ -13,9 +13,12 @@ sock.listen(5)
 
 print("Server is ready")
 while True:
-    session_socket, address = sock.accept()
-    print("connected to ", address[0], ":", address[1])
-    session_io = GermsSocketIO(session_socket)
-    servlet.next_session(session_io)
-    session_io.close()
-    print("disconnected with ", address[0], ":", address[1])
+    try:
+        session_socket, address = sock.accept()
+        print("connected to ", address[0], ":", address[1])
+        session_io = GermsSocketIO(session_socket)
+        servlet.next_session(session_io)
+        session_io.close()
+        print("disconnected with ", address[0], ":", address[1])
+    except ConnectionResetError:
+        print("connection lost!")
