@@ -17,13 +17,24 @@ class GermsNerveCore(NerveCore):
             self.log_acts = graph.get_tensor_by_name("log_acts:0")
 
             self.ass_loss = graph.get_tensor_by_name("ass_loss:0")
-            self.real_loss = graph.get_tensor_by_name("real_loss:0")
             self.loss_loss = graph.get_tensor_by_name("loss_loss:0")
+            self.real_loss = graph.get_tensor_by_name("real_loss:0")
+            self.ave_ass_loss = graph.get_tensor_by_name("ave_ass_loss:0")
+            self.ave_loss_loss = graph.get_tensor_by_name("ave_loss_loss:0")
+            self.ave_real_loss = graph.get_tensor_by_name("ave_real_loss:0")
 
             self.learning_rate_actor = graph.get_tensor_by_name("learning_rate_actor:0")
             self.learning_rate_critic = graph.get_tensor_by_name("learning_rate_critic:0")
             self.train_actor = graph.get_operation_by_name("train_actor")
             self.train_critic = graph.get_operation_by_name("train_critic")
+
+            self.summary_ass_loss = tf.summary.scalar("summary_ass_loss", self.ave_ass_loss)
+            self.summary_loss_loss = tf.summary.scalar("summary_loss_loss", self.ave_loss_loss)
+            self.summary_real_loss = tf.summary.scalar("summary_real_loss", self.ave_real_loss)
+            self.summary_all = tf.summary.merge_all()
+        self.summary_file_writer = tf.summary.FileWriter("../logs", graph=self.graph)
+        self.critic_train_step = 0
+        self.actor_train_step = 0
 
     def create_graph(self):
         with self.graph.as_default():
@@ -69,6 +80,7 @@ class GermsNerveCore(NerveCore):
 
             # train network
             real_loss = tf.placeholder(tf.float32, name="real_loss")  # [bs]
+            ave_real_loss = tf.reduce_mean(real_loss, name="ave_real_loss")  # 0
             loss_loss = tf.abs(ass_loss - real_loss, name="loss_loss")  # [bs]
             ave_loss_loss = tf.reduce_mean(loss_loss, name="ave_loss_loss")  # 0
 
@@ -82,7 +94,7 @@ class GermsNerveCore(NerveCore):
                           + tf.reduce_sum([tf.reduce_mean(tf.abs(weight)) for weight in ass_network.bias])
             weight_loss = weight_loss * 0.01
 
-            learning_rate_actor = tf.Variable(1e-4, name="learning_rate_actor")
+            learning_rate_actor = tf.Variable(2e-3, name="learning_rate_actor")
             tf.train.AdamOptimizer(learning_rate_actor).minimize(
                 name="train_actor",
                 loss=ave_ass_loss + weight_loss,
@@ -92,7 +104,7 @@ class GermsNerveCore(NerveCore):
                 ],
             )
 
-            learning_rate_critic = tf.Variable(1e-4, name="learning_rate_critic")
+            learning_rate_critic = tf.Variable(2e-3, name="learning_rate_critic")
             tf.train.AdamOptimizer(learning_rate_critic).minimize(
                 name="train_critic",
                 loss=ave_loss_loss + weight_loss,
@@ -123,11 +135,11 @@ class GermsNerveCore(NerveCore):
         )
 
     def run_train_critic(self, val_log_feels, val_log_acts, val_real_loss):
-        return self.sess.run(
+        _, val_summary_loss_loss, val_summary_real_loss = self.sess.run(
             fetches=[
                 self.train_critic,
-                self.ass_loss,
-                self.loss_loss,
+                self.summary_loss_loss,
+                self.summary_real_loss
             ],
             feed_dict={
                 self.log_feels: val_log_feels,
@@ -136,12 +148,16 @@ class GermsNerveCore(NerveCore):
                 self.memory_base: np.zeros([np.shape(val_log_feels)[0], 4], np.float32)
             }
         )
+        self.summary_file_writer.add_summary(val_summary_loss_loss, self.critic_train_step)
+        self.summary_file_writer.add_summary(val_summary_real_loss, self.critic_train_step)
+        self.summary_file_writer.flush()
+        self.critic_train_step += 1
 
     def run_train_actor(self, val_log_feels):
-        return self.sess.run(
+        _, val_summary_ass_loss = self.sess.run(
             fetches=[
                 self.train_actor,
-                self.ass_loss
+                self.summary_ass_loss
             ],
             feed_dict={
                 self.log_feels: val_log_feels,
@@ -149,3 +165,6 @@ class GermsNerveCore(NerveCore):
                 self.memory_base: np.zeros([np.shape(val_log_feels)[0], 4], np.float32)
             }
         )
+        self.summary_file_writer.add_summary(val_summary_ass_loss, self.actor_train_step)
+        self.summary_file_writer.flush()
+        self.actor_train_step += 1
