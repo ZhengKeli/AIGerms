@@ -42,22 +42,23 @@ class GermsNerveCore(NerveCore):
             act = tf.reduce_mean(act, -1, False, name="act")  # [bs,2]
 
             # critic line
-            log_feels = tf.placeholder(tf.float32, [None, 8, 6], name="log_feels")  # [bs,8,6]
-            log_feels = [tf.gather(log_feels, [0, 2, 4], axis=-1), tf.gather(log_feels, [1, 3, 5], axis=-1)]  # 2*[bs,8,3]
-            log_feels = tf.stack(log_feels, -2)  # [bs,8,2,3]
-            log_perceptions = feel_network.apply(log_feels)  # [bs,8,2,3]
+            rc = 4
+            log_feels = tf.placeholder(tf.float32, [None, rc, 6], name="log_feels")  # [bs,rc,6]
+            log_feels = [tf.gather(log_feels, [0, 2, 4], axis=-1), tf.gather(log_feels, [1, 3, 5], axis=-1)]  # 2*[bs,rc,3]
+            log_feels = tf.stack(log_feels, -2)  # [bs,rc,2,3]
+            log_perceptions = feel_network.apply(log_feels)  # [bs,rc,2,3]
 
-            log_acts = actor_network.apply(log_perceptions)  # [bs,8,2,4]
-            log_acts = tf.reduce_mean(log_acts, -1, False, name="log_acts")  # [bs,8,2]
-            log_acts = tf.stack([log_acts], -1)  # [bs,8,2,1]
+            log_acts = actor_network.apply(log_perceptions)  # [bs,rc,2,4]
+            log_acts = tf.reduce_mean(log_acts, -1, False, name="log_acts")  # [bs,rc,2]
+            log_acts = tf.stack([log_acts], -1)  # [bs,rc,2,1]
 
-            log_situations = tf.concat([log_perceptions, log_acts], -1)  # [bs,8,2,4]
-            log_situation_list = tf.unstack(log_situations, 8, -3)  # 8*[bs,2,4]
+            log_situations = tf.concat([log_perceptions, log_acts], -1)  # [bs,rc,2,4]
+            log_situation_list = tf.unstack(log_situations, rc, -3)  # rc*[bs,2,4]
 
             memory_base = tf.placeholder(tf.float32, [None, 4], name="memory_base")  # [bs,4]
             memory_base = tf.stack([memory_base, memory_base], -2)  # [bs,2,4]
             cycle_output = memory_base  # [bs,2,4]
-            for i in range(8):
+            for i in range(rc):
                 cycle_input = tf.concat([log_situation_list[i], cycle_output], -1)  # [bs,2,8]
                 cycle_output = cell_network.apply(cycle_input)  # [bs,2,4]
 
@@ -71,20 +72,30 @@ class GermsNerveCore(NerveCore):
             loss_loss = tf.abs(ass_loss - real_loss, name="loss_loss")  # [bs]
             ave_loss_loss = tf.reduce_mean(loss_loss, name="ave_loss_loss")  # 0
 
-            learning_rate_actor = tf.Variable(5e-3, name="learning_rate_actor")
+            weight_loss = tf.reduce_sum([tf.reduce_mean(tf.abs(weight)) for weight in feel_network.weights]) \
+                          + tf.reduce_sum([tf.reduce_mean(tf.abs(weight)) for weight in actor_network.weights]) \
+                          + tf.reduce_sum([tf.reduce_mean(tf.abs(weight)) for weight in cell_network.weights]) \
+                          + tf.reduce_sum([tf.reduce_mean(tf.abs(weight)) for weight in ass_network.weights]) \
+                          + tf.reduce_sum([tf.reduce_mean(tf.abs(weight)) for weight in feel_network.bias]) \
+                          + tf.reduce_sum([tf.reduce_mean(tf.abs(weight)) for weight in actor_network.bias]) \
+                          + tf.reduce_sum([tf.reduce_mean(tf.abs(weight)) for weight in cell_network.bias]) \
+                          + tf.reduce_sum([tf.reduce_mean(tf.abs(weight)) for weight in ass_network.bias])
+            weight_loss = weight_loss * 0.01
+
+            learning_rate_actor = tf.Variable(1e-4, name="learning_rate_actor")
             tf.train.AdamOptimizer(learning_rate_actor).minimize(
                 name="train_actor",
-                loss=ave_ass_loss,
+                loss=ave_ass_loss + weight_loss,
                 var_list=[
                     feel_network.weights, feel_network.bias,
                     actor_network.weights, actor_network.bias
                 ],
             )
 
-            learning_rate_critic = tf.Variable(5e-3, name="learning_rate_critic")
+            learning_rate_critic = tf.Variable(1e-4, name="learning_rate_critic")
             tf.train.AdamOptimizer(learning_rate_critic).minimize(
                 name="train_critic",
-                loss=ave_loss_loss,
+                loss=ave_loss_loss + weight_loss,
                 var_list=[
                     feel_network.weights, feel_network.bias,
                     cell_network.weights, cell_network.bias,

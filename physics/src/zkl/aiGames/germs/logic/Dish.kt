@@ -1,7 +1,6 @@
 package zkl.aiGames.germs.logic
 
 import zkl.aiGames.germs.Conf
-import zkl.aiGames.germs.Conf.logBufferSize
 import zkl.aiGames.germs.nerveCore.GermFeel
 import zkl.aiGames.germs.nerveCore.GermLog
 import zkl.aiGames.germs.nerveCore.NerveCore
@@ -180,14 +179,13 @@ class Dish(val nerveCore: NerveCore, val dishSize: Double) {
 	}
 	
 	@Synchronized
-	fun trainActor() {
-		if (logBuffer.size < logBufferSize) return
-		nerveCore.trainCritic(logBuffer)
-		nerveCore.trainActor(logBuffer)
+	fun trainNerveCore() {
+		if (logBuffer.size < Conf.logBufferSize) return
+		if (Conf.trainCritic) nerveCore.trainCritic(logBuffer)
+		if (Conf.trainActor) nerveCore.trainActor(logBuffer)
 		trainedCount += logBuffer.size
 		logBuffer.clear()
 	}
-	
 	
 	//logging
 	@Synchronized

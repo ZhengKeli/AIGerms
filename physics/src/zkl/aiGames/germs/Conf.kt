@@ -12,8 +12,8 @@ object Conf {
 	val germRadius = 20.0
 	
 	val nutrientInterval = 1e4 / (dishSize * germCount) / 0.05
-	val nutrientMaxCount = germCount * 2.0
-	val nutrientAmountRange = 6.0..6.0
+	val nutrientMaxCount = germCount * 1.0
+	val nutrientAmountRange = 10.0..10.0
 	val nutrientMaxVelocity = 0.05
 	val nutrientDisturbForce = 1e-4
 	
@@ -34,11 +34,13 @@ object Conf {
 	val logBufferSize = 50
 	val energyLogBufferSize = 1000
 	
-	val isTraining = true
+	val isTraining = false
+	val trainCritic = true
+	val trainActor = true
 	val actInterval = 100.0
-	val hopeCount = 8
-	val disturbRate = 0.5..0.7
-	val disturbForce = 0.4
+	val hopeCount = 4
+	val disturbRate = 0.5..1.0
+	val disturbForce = 0.3
 	
 	
 	//process & viewing

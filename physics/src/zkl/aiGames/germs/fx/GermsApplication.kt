@@ -141,7 +141,7 @@ class GermsApplication : Application() {
 			
 			if (Conf.isTraining) {
 				dish.maintainLogs()
-				dish.trainActor()
+				dish.trainNerveCore()
 			}
 			
 			energyLogs.add(dish.getAverageEnergy())

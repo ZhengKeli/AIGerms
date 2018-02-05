@@ -18,39 +18,47 @@ class Germ {
 			when {
 				value.x < 0.0 -> {
 					re.x = 0.0
-					disturbAct = pointOf(-disturbAct.x, disturbAct.y)
+					if (disturbAct.x < 0)
+						disturbAct = pointOf(-disturbAct.x, disturbAct.y)
 				}
 				value.x > Conf.dishSize -> {
 					re.x = Conf.dishSize
-					disturbAct = pointOf(-disturbAct.x, disturbAct.y)
+					if (disturbAct.x > 0)
+						disturbAct = pointOf(-disturbAct.x, disturbAct.y)
 				}
 			}
 			when {
 				value.y < 0.0 -> {
 					re.y = 0.0
-					disturbAct = pointOf(disturbAct.x, -disturbAct.y)
+					if (disturbAct.y < 0)
+						disturbAct = pointOf(disturbAct.x, -disturbAct.y)
 				}
 				value.y > Conf.dishSize -> {
 					re.y = Conf.dishSize
-					disturbAct = pointOf(disturbAct.x, -disturbAct.y)
+					if (disturbAct.y > 0)
+						disturbAct = pointOf(disturbAct.x, -disturbAct.y)
 				}
 			}
 			field = re
 		}
 	var velocity: Point2D = zeroPoint2D()
-		set(value) { field = value.limitRound(1.0) }
+		set(value) {
+			field = value.limitRound(1.0)
+		}
 	var energy: Double = 0.0
 	
 	
 	//think in nerve
 	var feel: GermFeel = GermFeel(zeroPoint2D(), zeroPoint2D(), zeroPoint2D())
 	var act: GermAct = GermAct(zeroPoint2D())
-	var log:GermLog? = null
+	var log: GermLog? = null
 	
 	
-	var disturbRate :Double = 0.0
+	var disturbRate: Double = 0.0
 	var disturbAct: Point2D = zeroPoint2D()
-		set(value) { field = value.limitRound(1.0) }
+		set(value) {
+			field = value.limitRound(1.0)
+		}
 	
 	
 }
