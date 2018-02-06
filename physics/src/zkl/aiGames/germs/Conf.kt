@@ -1,6 +1,7 @@
 package zkl.aiGames.germs
 
 import zkl.aiGames.germs.logic.Germ
+import zkl.tools.math.geometry.absolute
 
 
 object Conf {
@@ -11,7 +12,7 @@ object Conf {
 	val germCount = 10
 	val germRadius = 20.0
 	
-	val nutrientInterval = 1e4 / (dishSize * germCount) / 0.05
+	val nutrientInterval = 1e4 / (dishSize * germCount) / 0.03
 	val nutrientMaxCount = germCount * 1.0
 	val nutrientAmountRange = 15.0..15.0
 	val nutrientMaxVelocity = 0.05
@@ -26,7 +27,11 @@ object Conf {
 	
 	//training
 	val germEnergyCost = { germ: Germ ->
-		germ.velocity.run { x * x + y * y } * 0.01 + 0.005
+		val velocityCost = germ.velocity.absolute().let {
+			if (it < 0.3) 0.0 else (it - 0.3) * 0.01
+		}
+		val staticCost = 0.01
+		velocityCost + staticCost
 	}
 	val germRealLoss = { actTimeEnergy: Double, hopeTimeEnergy: Double ->
 		((actTimeEnergy - hopeTimeEnergy) * 10.0).coerceIn(-1.0, 1.0)
@@ -37,10 +42,10 @@ object Conf {
 	val isTraining = true
 	val trainCritic = true
 	val trainActor = true
-	val actInterval = 100.0
+	val actInterval = 50.0
 	val hopeCount = 4
-	val disturbRate = 0.0..0.3
-	val disturbForce = 0.3
+	val disturbRate = 0.5..0.9
+	val disturbForce = 0.1
 	
 	
 	//process & viewing
